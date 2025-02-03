@@ -1,0 +1,25 @@
+{
+  "name": "@7sigma/file-context-builder",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/7sigma/file-context-builder.git"
+  },
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "example": "yarn tsx example-usage.ts >.context.out"
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.3",
+    "tsc": "^2.0.4",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "typescript": "^5.7.3"
+  }
+}

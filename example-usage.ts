@@ -19,6 +19,7 @@ const config: FileCollectorConfig = {
   ],
   includeFiles: [
     "README.md",
+    "LICENSE.md",
     "package.json", 
     "tsconfig.json",
     "example-usage.ts"

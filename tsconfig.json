@@ -2,6 +2,7 @@
     "compilerOptions": {
       "target": "ESNext",
       "module": "ESNext",
+      "emitDeclarationOnly": true,
       "moduleResolution": "node",
       "declaration": true,
       "outDir": "dist",

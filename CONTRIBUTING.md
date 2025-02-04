@@ -1,7 +1,7 @@
 
-### **📜 CONTRIBUTING.md**
+# 📜 Contributing
 
-# Contributing to File Context Builder
+
 
 We welcome contributions from the community! Please read this guide before submitting a pull request.
 

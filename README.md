@@ -1,5 +1,3 @@
-### **📜 README.md**
-
 # File Context Builder
 
 File Context Builder is a lightweight library that **packages your project’s code files into structured context**—ready to be consumed by Large Language Models (LLMs). It enables **single-shot code context generation** for LLM prompting and supports **dynamic packaging for LLM agents** that require iterative file submission.
@@ -29,7 +27,7 @@ Build and send the precise LLM context you need, with full control, and stop rel
 
 # 🚀 Getting Started
 
-### **1️⃣ Install the Library**
+### 1️⃣ &nbsp;&nbsp;Install the Library**
 You can install File Context Builder **directly from GitHub**:
 
 ```bash
@@ -42,7 +40,7 @@ Or if you prefer npm:
 npm install 7SigmaLLC/file-context-builder
 ```
 
-2️⃣ Define Your Context Configuration
+### 2️⃣ &nbsp;&nbsp;Define Your Context Configuration
 
 Use a simple JSON-based config to select files for inclusion.
 
@@ -103,11 +101,10 @@ export interface Renderer {
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to submit issues, bug fixes, and new features.
 
-## Code of Conduct
+## 🔏 Code of Conduct
 
 See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for Code of Conduct.
 
-
-## 📜 License
+## 📄 License
 
 File Context Builder is licensed under the [MIT License](./LICENSE.md).

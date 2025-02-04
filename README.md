@@ -54,40 +54,30 @@ import {
   JsonRenderer,
 } from "@7sigma/file-context-builder";
 
-class FileContextRunner {
-  private config: FileCollectorConfig;
+const config: FileCollectorConfig = {
+  name: "MyProjectFileContext",
+  showContents: true, // Include file contents
+  showMeta: true, // Include metadata (file paths, sizes, etc.)
+  includeDirs: [
+    {
+      path: "./src",
+      include: ["**/*.ts"], // Include all TypeScript files
+      recursive: true,
+    },
+  ],
+  includeFiles: ["README.md", "package.json"],
+};
 
-  constructor() {
-    this.config = {
-      name: "MyProjectFileContext",
-      showContents: true, // Include file contents
-      showMeta: true, // Include metadata (file paths, sizes, etc.)
-      includeDirs: [
-        {
-          path: "./src",
-          include: ["**/*.ts"], // Include all TypeScript files
-          recursive: true,
-        },
-      ],
-      includeFiles: ["README.md", "package.json"],
-    };
-  }
+(async () => {
+  const builder = new FileContextBuilder(config);
+  const context = await builder.build();
 
-  public async run() {
-    const builder = new FileContextBuilder(this.config);
-    const context = await builder.build();
+  const consoleRenderer = new ConsoleRenderer();
+  console.log(consoleRenderer.render(context));
 
-    // Render output
-    const consoleRenderer = new ConsoleRenderer();
-    console.log(consoleRenderer.render(context));
-
-    const jsonRenderer = new JsonRenderer();
-    console.log(jsonRenderer.render(context));
-  }
-}
-
-// Run the file context builder
-new FileContextRunner().run();
+  const jsonRenderer = new JsonRenderer();
+  console.log(jsonRenderer.render(context));
+})();
 ```
 
 ## 🛠️ Extending the Output

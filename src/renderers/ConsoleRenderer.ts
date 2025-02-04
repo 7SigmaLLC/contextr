@@ -1,5 +1,6 @@
 // src/renderers/ConsoleRenderer.ts
 import * as path from 'path';
+import chalk from 'chalk';
 import { FileContext } from '../types';
 import { Renderer } from './Renderer';
 
@@ -11,7 +12,7 @@ interface TreeNode {
   fileSize?: number;
 }
 
-export class ConsoleRenderer implements Renderer {
+export class ConsoleRenderer implements Renderer<string> {
   render(context: FileContext): string {
     let output = "";
     const config = context.config;
@@ -19,9 +20,9 @@ export class ConsoleRenderer implements Renderer {
 
     // Render meta: Directory Tree
     if (config.showMeta) {
-      output += "=== Directory Tree ===\n";
+      output += chalk.bold.blue("=== Directory Tree ===") + "\n";
       const tree = this.buildTree(files);
-      output += tree.name + "\n";
+      output += chalk.bold(tree.name) + "\n";
       output += this.getTreeString(tree, "");
       output += "\n";
     }
@@ -30,7 +31,9 @@ export class ConsoleRenderer implements Renderer {
     if (config.showContents) {
       for (const file of files) {
         if (config.showMeta) {
-          output += `--- File: ${file.filePath} (Size: ${file.fileSize} bytes, ${file.lineCount} lines) ---\n`;
+          output += chalk.yellow(
+            `--- File: ${file.filePath} (Size: ${file.fileSize} bytes, ${file.lineCount} lines) ---`
+          ) + "\n";
         }
         output += file.content + "\n";
         if (config.showMeta) {
@@ -41,12 +44,14 @@ export class ConsoleRenderer implements Renderer {
 
     // Render summary with Included Files and Statistics sections.
     if (config.showMeta) {
-      output += "=== Summary ===\n";
+      output += chalk.bold.blue("=== Summary ===") + "\n";
 
       // Included Files Section: list every file with its metadata.
-      output += "\nIncluded Files:\n";
+      output += "\n" + chalk.bold.magenta("Included Files:") + "\n";
       files.forEach((file) => {
-        output += `  ${file.filePath} - ${file.fileSize} bytes, ${file.lineCount} lines\n`;
+        output += `  ${chalk.cyan(file.filePath)} - ${chalk.green(
+          file.fileSize + " bytes"
+        )}, ${chalk.green(file.lineCount + " lines")}\n`;
       });
 
       // Statistics Section: compute overall stats based on file content.
@@ -57,11 +62,11 @@ export class ConsoleRenderer implements Renderer {
       // A rough heuristic: 1 token ≈ 4 characters.
       const estimatedTokens = Math.round(totalChars / 4);
 
-      output += "\nStatistics:\n";
-      output += `  Total files: ${totalFiles}\n`;
-      output += `  Total lines: ${totalLines}\n`;
-      output += `  Total size: ${totalSize} bytes\n`;
-      output += `  Estimated tokens: ${estimatedTokens}\n`;
+      output += "\n" + chalk.bold.magenta("Statistics:") + "\n";
+      output += `  ${chalk.green("Total files:")} ${chalk.cyan(totalFiles.toString())}\n`;
+      output += `  ${chalk.green("Total lines:")} ${chalk.cyan(totalLines.toString())}\n`;
+      output += `  ${chalk.green("Total size:")} ${chalk.cyan(totalSize.toString() + " bytes")}\n`;
+      output += `  ${chalk.green("Estimated tokens:")} ${chalk.cyan(estimatedTokens.toString())}\n`;
     }
 
     return output;
@@ -99,7 +104,7 @@ export class ConsoleRenderer implements Renderer {
     const lastIndex = children.length - 1;
     children.forEach((child, index) => {
       const isLast = index === lastIndex;
-      str += prefix + (isLast ? "└── " : "├── ") + child.name + "\n";
+      str += prefix + (isLast ? "└── " : "├── ") + chalk.yellow(child.name) + "\n";
       str += this.getTreeString(child, prefix + (isLast ? "    " : "│   "));
     });
     return str;

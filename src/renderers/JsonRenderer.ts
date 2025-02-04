@@ -1,13 +1,33 @@
+// src/renderers/JsonRenderer.ts
 import { FileContext } from '../types';
 import { Renderer } from './Renderer';
 
+export interface FileContextJson {
+  fileContext: FileContext;
+  summary: {
+    includedFiles: {
+      filePath: string;
+      fileSize: number;
+      lineCount: number;
+    }[];
+    statistics: {
+      totalFiles: number;
+      totalLines: number;
+      totalSize: number;
+      estimatedTokens: number;
+    };
+  };
+}
+
 export class JsonRenderer implements Renderer {
-  render(context: FileContext): string {
-    // Compute summary details based on the file context.
+  /**
+   * Returns the rendered output as a typed object.
+   */
+  render(context: FileContext): FileContextJson {
     const includedFiles = context.files.map(file => ({
       filePath: file.filePath,
       fileSize: file.fileSize,
-      lineCount: file.lineCount
+      lineCount: file.lineCount,
     }));
 
     const totalFiles = context.files.length;
@@ -17,22 +37,17 @@ export class JsonRenderer implements Renderer {
     // A rough heuristic: 1 token ≈ 4 characters.
     const estimatedTokens = Math.round(totalChars / 4);
 
-    const summary = {
-      includedFiles,
-      statistics: {
-        totalFiles,
-        totalLines,
-        totalSize,
-        estimatedTokens
-      }
-    };
-
-    // Create an output object that includes both the original file context and the computed summary.
-    const output = {
+    return {
       fileContext: context,
-      summary
+      summary: {
+        includedFiles,
+        statistics: {
+          totalFiles,
+          totalLines,
+          totalSize,
+          estimatedTokens,
+        },
+      },
     };
-
-    return JSON.stringify(output, null, 2);
   }
 }

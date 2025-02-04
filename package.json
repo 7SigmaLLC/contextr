@@ -15,10 +15,12 @@
   "scripts": {
     "build": "tsc",
     "prepare": "tsc",
-    "postinstall": "yarn build", 
+    "postinstall": "yarn build",
     "example": "yarn tsx example-usage.ts >.context.out"
+
   },
   "dependencies": {
+    "chalk": "^5.4.1",
     "fast-glob": "^3.3.3",
     "tsc": "^2.0.4",
     "tsx": "^4.19.2",

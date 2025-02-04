@@ -1,5 +1,6 @@
+// src/renderers/Renderer.ts
 import { FileContext } from '../types';
 
-export interface Renderer {
-  render(context: FileContext): string;
+export interface Renderer<T = unknown> {
+  render(context: FileContext): T;
 }

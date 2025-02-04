@@ -1,9 +1,11 @@
 // example-usage.ts
+import chalk from "chalk";
 import {
   FileContextBuilder,
   FileCollectorConfig,
   ConsoleRenderer,
-  JsonRenderer
+  JsonRenderer,
+  FileContextJson,
 } from "./src";
 
 const config: FileCollectorConfig = {
@@ -14,16 +16,16 @@ const config: FileCollectorConfig = {
     {
       path: "./src",
       include: ["**/*.ts"],
-      recursive: true
-    }
+      recursive: true,
+    },
   ],
   includeFiles: [
     "README.md",
     "LICENSE.md",
-    "package.json", 
+    "package.json",
     "tsconfig.json",
-    "example-usage.ts"
-  ]
+    "example-usage.ts",
+  ],
 };
 
 (async () => {
@@ -32,12 +34,19 @@ const config: FileCollectorConfig = {
 
   // Option 1: Render as a console-friendly string
   const consoleRenderer = new ConsoleRenderer();
+  console.log(chalk.bold.blueBright("=== ConsoleRenderer Output ==="));
   console.log(consoleRenderer.render(context));
 
-  // Option 2: Render as JSON
-  // const jsonRenderer = new JsonRenderer();
-  // console.log(jsonRenderer.render(context));
+  // Option 2: Render as a strongly-typed JSON object
+  const jsonRenderer = new JsonRenderer();
+  const output: FileContextJson = jsonRenderer.render(context);
 
-  // You can also work directly with the strongly-typed context:
-  // console.log(context.config, context.files);
+  // Now you have a strongly typed JSON object.
+  console.log(chalk.bold.blueBright("=== JsonRenderer Output ==="));
+  
+  console.log("Summary Statistics:", output.summary.statistics);
+  console.log("Project Name:", output.fileContext.config.name);
+
+  // You can also work directly with the file context if needed.
+  console.log("Files:", output.fileContext.files);
 })();

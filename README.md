@@ -57,7 +57,7 @@ import {
 const config: FileCollectorConfig = {
   name: "MyProjectFileContext",
   showContents: true, // Include file contents
-  showMeta: true, // Include metadata (file paths, sizes, etc.)
+  showMeta: true,     // Include metadata (file paths, sizes, etc.)
   includeDirs: [
     {
       path: "./src",
@@ -72,11 +72,14 @@ const config: FileCollectorConfig = {
   const builder = new FileContextBuilder(config);
   const context = await builder.build();
 
+  // Render as a console-friendly string
   const consoleRenderer = new ConsoleRenderer();
   console.log(consoleRenderer.render(context));
 
+  // Render as a strongly-typed object literal.
   const jsonRenderer = new JsonRenderer();
-  console.log(jsonRenderer.render(context));
+  const output = jsonRenderer.render(context);
+  console.log(output);
 })();
 ```
 

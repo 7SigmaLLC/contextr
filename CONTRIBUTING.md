@@ -25,9 +25,9 @@ We welcome contributions from the community! Please read this guide before submi
 - Implement the **Renderer** interface:
 
 ```ts
-  export interface Renderer {
-    render(context: FileContext): string;
-  }
+export interface Renderer<T = unknown> {
+  render(context: FileContext): T;
+}
 ```
 
 If your renderer is useful for others, submit it as a PR!

@@ -92,8 +92,8 @@ By default, two renderers are provided:
 You can create custom renderers by implementing the Renderer interface:
 
 ```ts
-export interface Renderer {
-  render(context: FileContext): string;
+export interface Renderer<T = unknown> {
+  render(context: FileContext): T;
 }
 ```
 

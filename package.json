@@ -1,5 +1,9 @@
 {
   "name": "@7sigma/file-context-builder",
+  "author": {
+    "name": "7Sigma",
+    "email": "oss@7sigma.io"
+  },
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

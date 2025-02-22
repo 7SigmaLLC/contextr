@@ -1,6 +1,6 @@
 # Contextr
 
-[![npm version](https://badge.fury.io/js/contextr.svg)](https://badge.fury.io/js/contextr)
+[![npm version](https://badge.fury.io/js/contextr.svg?cacheBust=1)](https://badge.fury.io/js/contextr)
 [![Build Status](https://github.com/7SigmaLLC/contextr/workflows/CI/badge.svg)](https://github.com/7SigmaLLC/contextr/actions)
 [![Downloads](https://img.shields.io/npm/dm/contextr.svg)](https://www.npmjs.com/package/contextr)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

@@ -27,7 +27,7 @@ Build and send the precise LLM context you need, with full control, and stop rel
 
 # 🚀 Getting Started
 
-### 1️⃣ &nbsp;&nbsp;Install the Library**
+### 1️⃣ &nbsp;&nbsp;**Install the Library**
 You can install Contextr **directly from GitHub**:
 
 ```bash

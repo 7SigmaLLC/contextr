@@ -12,7 +12,7 @@
     "prepare": "tsc",
     "example": "yarn tsx example-usage.ts > .context.out",
     "release": "standard-version",
-    "deploy": "npm version patch && npm build && npm publish"
+    "deploy": "npm version patch && yarn build && npm publish"
   },
   "files": [
     "dist"

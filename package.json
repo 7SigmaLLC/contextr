@@ -1,6 +1,6 @@
 {
   "name": "contextr",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A lightweight library that packages your project's code files into structured context for LLMs.  Enables single-shot code context generation and supports dynamic packaging for LLM agents.",
   "keywords": [
     "context",

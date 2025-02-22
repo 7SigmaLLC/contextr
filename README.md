@@ -116,8 +116,8 @@ See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for Code of Conduct.
 <!-- ```npm version patch```
 
 ```npm publish``` -->
-
-```yarn release```
+```npm run test```
+```npm run release```
 
 ## 📄 License
 

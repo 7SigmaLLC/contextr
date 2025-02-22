@@ -1,6 +1,6 @@
 {
   "name": "contextr",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A lightweight library that packages your project's code files into structured context for LLMs.  Enables single-shot code context generation and supports dynamic packaging for LLM agents.",
   "keywords": [
     "context",
@@ -19,12 +19,12 @@
   "scripts": {
     "build": "tsc",
     "prepare": "husky",
-    "example": "yarn tsx example-usage.ts > .context.out",
+    "example": "npm tsx example-usage.ts > .context.out",
     "test": "jest",
     "lint": "prettier --check .",
     "format": "prettier --write .",
     "lint-staged": "lint-staged",
-    "release": "yarn version --patch && npm publish && git push && git push --tags"
+    "release": "npm version --patch && npm publish && git push && git push --tags"
   },
   "files": [
     "dist"

@@ -45,7 +45,7 @@ cd file-context-builder
 2.	Install dependencies:
 
 ```bash
-yarn install
+npm install
 ```
 
 

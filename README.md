@@ -105,6 +105,12 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to submit issues, bu
 
 See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for Code of Conduct.
 
+## Publishing
+
+```npm version patch```
+
+```npm publish```
+
 ## 📄 License
 
 File Context Builder is licensed under the [MIT License](./LICENSE.md).

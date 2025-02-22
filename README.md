@@ -37,12 +37,6 @@ Build and send the precise LLM context you need, with full control, and stop rel
 You can install Contextr **directly from GitHub**:
 
 ```bash
-yarn add contextr  
-```
-
-Or if you prefer npm:
-
-```bash
 npm i contextr
 ```
 
@@ -51,40 +45,44 @@ npm i contextr
 Use a simple JSON-based config to select files for inclusion.
 
 ```ts
-import {
-  FileContextBuilder,
-  FileCollectorConfig,
-  ConsoleRenderer,
-  JsonRenderer,
-} from "contextr";
+import contextr from "contextr";
+import type { FileCollectorConfig } from "contextr";
 
-const config: FileCollectorConfig = {
-  name: "MyProjectFileContext",
-  showContents: true, // Include file contents
-  showMeta: true,     // Include metadata (file paths, sizes, etc.)
-  includeDirs: [
-    {
-      path: "./src",
-      include: ["**/*.ts"], // Include all TypeScript files
-      recursive: true,
-    },
-  ],
-  includeFiles: ["README.md", "package.json"],
-};
+const { ConsoleRenderer, FileContextBuilder } = contextr;
 
-(async () => {
+async function main() {
+  const config: FileCollectorConfig = {
+    name: "",
+    showContents: true,
+    showMeta: true,
+    includeDirs: [
+      {
+        path: "./prisma",
+        include: ["**/*"],
+        recursive: true,
+      },
+      {
+        path: "./src",
+        include: ["**/*.ts"],
+        recursive: true,
+      },
+    ],
+    includeFiles: ["./index.ts", "tsconfig.json", "./package.json"],
+  };
+
+  // Build the file context
   const builder = new FileContextBuilder(config);
   const context = await builder.build();
 
-  // Render as a console-friendly string
+  // Render output
   const consoleRenderer = new ConsoleRenderer();
-  console.log(consoleRenderer.render(context));
+  const notes = consoleRenderer.render(context);
+  console.log("\n✅ File Context:");
+  console.log(notes);
+}
 
-  // Render as a strongly-typed object literal.
-  const jsonRenderer = new JsonRenderer();
-  const output = jsonRenderer.render(context);
-  console.log(output);
-})();
+main();
+
 ```
 
 ## 🛠️ Extending the Output

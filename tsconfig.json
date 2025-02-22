@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2015",
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "declaration": true,
     "outDir": "dist",
@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "downlevelIteration": true
   },
-  "include": ["src"]
+  "include": ["src/**/*", "example-usage.ts", "__tests__/**/*"]
 }

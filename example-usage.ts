@@ -8,7 +8,7 @@ import {
   FileContextJson,
 } from "./src";
 
-const config: FileCollectorConfig = {
+export const collectorConfig: FileCollectorConfig = {
   name: "MyProjectFileContext",
   showContents: true,
   showMeta: true,
@@ -20,7 +20,7 @@ const config: FileCollectorConfig = {
     },
     {
       path: "./__tests__",
-      include: ["**/*.ts"],
+      include: ["**/*.*"],
       recursive: true,
     },
     {
@@ -41,11 +41,13 @@ const config: FileCollectorConfig = {
     "tsconfig.json",
     "example-usage.ts",
     "jest.config.js",
+    ".npmrc",
+    ".gitignore",
   ],
 };
 
 (async () => {
-  const builder = new FileContextBuilder(config);
+  const builder = new FileContextBuilder(collectorConfig);
   const context = await builder.build();
 
   // Option 1: Render as a console-friendly string
@@ -64,5 +66,7 @@ const config: FileCollectorConfig = {
   console.log("Project Name:", output.fileContext.config.name);
 
   // You can also work directly with the file context if needed.
-  console.log("Files:", output.fileContext.files);
+  if (process.env.NODE_ENV !== "test") {
+    console.log("Files:", output.fileContext.files);
+  }
 })();

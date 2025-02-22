@@ -2,6 +2,7 @@
   "name": "contextr",
   "version": "1.0.13",
   "description": "A lightweight library that packages your project's code files into structured context for LLMs.  Enables single-shot code context generation and supports dynamic packaging for LLM agents.",
+  "type": "commonjs",
   "keywords": [
     "context",
     "code",
@@ -24,20 +25,15 @@
     "lint": "prettier --check .",
     "format": "prettier --write .",
     "lint-staged": "lint-staged",
-    "release": "npm version --patch && npm publish && git push && git push --tags"
+    "release": "npm version --patch && npm publish && git push && git push --tags",
+    "login": "npm login --registry=https://registry.npmjs.org"
   },
   "files": [
     "dist"
   ],
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "prettier --write",
-      "tsc --noEmit --esModuleInterop true --target ES2015 --downlevelIteration true --moduleResolution node",
-      "jest --bail --findRelatedTests"
-    ]
-  },
+
   "dependencies": {
-    "chalk": "^5.4.1",
+    "chalk": "^4.1.2",
     "fast-glob": "^3.3.3",
     "tsx": "^4.19.2"
   },

@@ -1,13 +1,11 @@
 
-# 📜 Contributing
-
-
+# Contributing
 
 We welcome contributions from the community! Please read this guide before submitting a pull request.
 
 ---
 
-## 🔥 How to Contribute
+## How to Contribute
 
 ### **1️⃣ Bug Fixes & Enhancements**
 - Check for existing issues before opening a new one.
@@ -21,7 +19,7 @@ We welcome contributions from the community! Please read this guide before submi
 - Submit a **pull request**.
 
 ### **3️⃣ Creating a Custom Renderer**
-- File Context Builder supports **pluggable renderers**.
+- Contextr supports **pluggable renderers**.
 - Implement the **Renderer** interface:
 
 ```ts

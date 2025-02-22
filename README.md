@@ -31,7 +31,7 @@ Build and send the precise LLM context you need, with full control, and stop rel
 You can install File Context Builder **directly from GitHub**:
 
 ```bash
-yarn add 7SigmaLLC/file-context-builder
+yarn add contextr  
 ```
 
 Or if you prefer npm:

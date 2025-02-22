@@ -19,7 +19,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "husky",
-    "example": "npm tsx example-usage.ts > .context.out",
+    "example": "tsx example-usage.ts > .context.out",
     "test": "jest",
     "lint": "prettier --check .",
     "format": "prettier --write .",

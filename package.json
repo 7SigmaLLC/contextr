@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "npm install typescript && husky",
+    "prepare": "husky",
     "example": "tsx example-usage.ts > .context.out",
     "test": "jest",
     "lint": "prettier --check .",
@@ -39,7 +39,6 @@
   "dependencies": {
     "chalk": "^5.4.1",
     "fast-glob": "^3.3.3",
-    "tsc": "^2.0.4",
     "tsx": "^4.19.2"
   },
   "devDependencies": {

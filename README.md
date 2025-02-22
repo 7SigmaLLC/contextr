@@ -113,9 +113,11 @@ See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for Code of Conduct.
 
 ## Publishing
 
-```npm version patch```
+<!-- ```npm version patch```
 
-```npm publish```
+```npm publish``` -->
+
+```yarn release```
 
 ## 📄 License
 

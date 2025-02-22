@@ -9,7 +9,7 @@ import {
 } from "./src";
 
 export const collectorConfig: FileCollectorConfig = {
-  name: "MyProjectFileContext",
+  name: "Relevant Files",
   showContents: true,
   showMeta: true,
   includeDirs: [
@@ -60,13 +60,11 @@ export const collectorConfig: FileCollectorConfig = {
   const output: FileContextJson = jsonRenderer.render(context);
 
   // Now you have a strongly typed JSON object.
-  console.log(chalk.bold.blueBright("=== JsonRenderer Output ==="));
-
-  console.log("Summary Statistics:", output.summary.statistics);
-  console.log("Project Name:", output.fileContext.config.name);
+  // console.log(chalk.bold.blueBright("Summary Statistics:", JSON.stringify(output.summary.statistics, null, 2)));
+  // console.log(chalk.bold.cyanBright("Context:", output.fileContext.config.name));
 
   // You can also work directly with the file context if needed.
-  if (process.env.NODE_ENV !== "test") {
-    console.log("Files:", output.fileContext.files);
-  }
+  // if (process.env.NODE_ENV !== "test") {
+  //   console.log("Files:", output.fileContext.files);
+  // }
 })();

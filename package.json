@@ -24,7 +24,7 @@
     "lint": "prettier --check .",
     "format": "prettier --write .",
     "lint-staged": "lint-staged",
-    "release": "npm version patch && git push && git push --tags"
+    "release": "yarn version --patch && npm publish && git push && git push --tags"
   },
   "files": [
     "dist"

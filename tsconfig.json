@@ -10,5 +10,11 @@
     "skipLibCheck": true,
     "downlevelIteration": true
   },
-  "include": ["src/**/*", "example-usage.ts", "__tests__/**/*"]
+  "include": [
+    "src/**/*",
+    "example-usage.ts"
+  ],
+  "exclude": [
+    "__tests__"
+  ]
 }

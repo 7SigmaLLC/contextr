@@ -1,6 +1,6 @@
 {
   "name": "contextr",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A lightweight library that packages your project's code files into structured context for LLMs.  Enables single-shot code context generation and supports dynamic packaging for LLM agents.",
   "type": "commonjs",
   "keywords": [
@@ -18,7 +18,8 @@
     "url": "git+https://github.com/7SigmaLLC/contextr.git"
   },
   "scripts": {
-    "build": "tsc",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
     "prepare": "husky",
     "example": "tsx example-usage.ts > .context.out",
     "test": "jest",

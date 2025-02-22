@@ -1,5 +1,11 @@
 # Contextr
 
+[![npm version](https://badge.fury.io/js/contextr.svg)](https://badge.fury.io/js/contextr)
+[![Build Status](https://github.com/7SigmaLLC/contextr/workflows/CI/badge.svg)](https://github.com/7SigmaLLC/contextr/actions)
+[![Downloads](https://img.shields.io/npm/dm/contextr.svg)](https://www.npmjs.com/package/contextr)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](https://www.typescriptlang.org/)
+
 Contextr is a lightweight library that **packages your project’s code files into structured context**—ready to be consumed by Large Language Models (LLMs). It enables **single-shot code context generation** for LLM prompting and supports **dynamic packaging for LLM agents** that require iterative file submission.
 
 ## 🎯 Why We Built It: LLM Workflows Need Precision, Not Guesswork

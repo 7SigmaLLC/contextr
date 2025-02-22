@@ -14,16 +14,27 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/7sigma/file-context-builder.git"
+    "url": "git+https://github.com/7SigmaLLC/contextr.git"
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "tsc",
-    "example": "yarn tsx example-usage.ts > .context.out"
+    "prepare": "husky",
+    "example": "yarn tsx example-usage.ts > .context.out",
+    "test": "jest",
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "lint-staged": "lint-staged"
   },
   "files": [
     "dist"
   ],
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "tsc --noEmit --esModuleInterop true --target ES2015 --downlevelIteration true --moduleResolution node",
+      "jest --bail --findRelatedTests"
+    ]
+  },
   "dependencies": {
     "chalk": "^5.4.1",
     "fast-glob": "^3.3.3",
@@ -32,7 +43,13 @@
     "typescript": "^5.7.3"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/node": "^18.15.11",
+    "husky": "^9.1.7",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.5.2",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.7.3"
   }
 }

@@ -18,6 +18,21 @@ const config: FileCollectorConfig = {
       include: ["**/*.ts"],
       recursive: true,
     },
+    {
+      path: "./__tests__",
+      include: ["**/*.ts"],
+      recursive: true,
+    },
+    {
+      path: "./.husky",
+      include: ["**/*.*"],
+      recursive: true,
+    },
+    {
+      path: "./.github",
+      include: ["**/*.yml"],
+      recursive: true,
+    },
   ],
   includeFiles: [
     "README.md",
@@ -25,6 +40,7 @@ const config: FileCollectorConfig = {
     "package.json",
     "tsconfig.json",
     "example-usage.ts",
+    "jest.config.js",
   ],
 };
 
@@ -43,7 +59,7 @@ const config: FileCollectorConfig = {
 
   // Now you have a strongly typed JSON object.
   console.log(chalk.bold.blueBright("=== JsonRenderer Output ==="));
-  
+
   console.log("Summary Statistics:", output.summary.statistics);
   console.log("Project Name:", output.fileContext.config.name);
 

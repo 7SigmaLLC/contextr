@@ -6,21 +6,23 @@ import { RegexPatternMatcher } from "./RegexPatternMatcher";
 /**
  * Result of a file content search operation
  */
+export interface FileSearchMatch {
+  line: number;
+  content: string;
+  matchIndex: number;
+  matchLength: number;
+  contextContent?: string;
+  contextStartLine?: number;
+  contextEndLine?: number;
+  beforeContext?: string;
+  afterContext?: string;
+}
+
 export interface FileSearchResult {
   file: CollectedFile;
   filePath?: string;
   content?: string;
-  matches: {
-    line: number;
-    content: string;
-    matchIndex: number;
-    matchLength: number;
-    contextContent?: string;
-    contextStartLine?: number;
-    contextEndLine?: number;
-    beforeContext?: string;
-    afterContext?: string;
-  }[];
+  matches: FileSearchMatch[];
   matchCount: number;
 }
 

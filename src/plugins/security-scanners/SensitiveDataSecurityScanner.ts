@@ -3,13 +3,13 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { 
-  Plugin, 
-  PluginType, 
-  SecurityScannerPlugin, 
-  SecurityReport, 
+import {
+  Plugin,
+  PluginType,
+  SecurityScannerPlugin,
+  SecurityReport,
   SecurityIssue,
-  SecurityIssueSeverity 
+  SecurityIssueSeverity
 } from '../PluginManager';
 import { CollectedFile } from '../../types';
 
@@ -23,16 +23,16 @@ interface SensitiveDataScannerConfig {
     pattern: string;
     severity: SecurityIssueSeverity;
   }>;
-  
+
   /** Whether to redact sensitive data in reports (default: true) */
   redactSensitiveData?: boolean;
-  
+
   /** Whether to scan env files (default: true) */
   scanEnvFiles?: boolean;
-  
+
   /** Whether to only include env file keys without values (default: true) */
   envFilesKeysOnly?: boolean;
-  
+
   /** File patterns to treat as env files */
   envFilePatterns?: string[];
 }
@@ -44,10 +44,10 @@ interface SensitiveDataScannerConfig {
 export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
   id = 'sensitive-data-scanner';
   name = 'Sensitive Data Security Scanner';
-  type = PluginType.SECURITY_SCANNER;
+  type: PluginType.SECURITY_SCANNER = PluginType.SECURITY_SCANNER;
   version = '1.0.0';
   description = 'Scans files for sensitive data patterns like API keys, passwords, and other credentials';
-  
+
   // Built-in patterns for sensitive data
   private readonly builtInPatterns = [
     {
@@ -96,7 +96,7 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
       severity: SecurityIssueSeverity.INFO
     }
   ];
-  
+
   // Default env file patterns
   private readonly defaultEnvFilePatterns = [
     '**/.env',
@@ -104,14 +104,14 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
     '**/config/secrets.*',
     '**/credentials.*'
   ];
-  
+
   /**
    * Initialize the plugin
    */
   async initialize(): Promise<void> {
     // Nothing to initialize
   }
-  
+
   /**
    * Scan files for sensitive data
    * @param files Files to scan
@@ -120,69 +120,69 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
    */
   async scanFiles(files: CollectedFile[], config?: SensitiveDataScannerConfig): Promise<CollectedFile[]> {
     const effectiveConfig = this.getEffectiveConfig(config);
-    
+
     // Combine built-in and custom patterns
     const patterns = [
       ...this.builtInPatterns,
       ...(effectiveConfig.customPatterns || [])
     ];
-    
+
     // Clone files to avoid modifying the original
     const result = [...files];
-    
+
     // Process each file
     for (const file of result) {
       // Check if this is an env file
       const isEnvFile = this.isEnvFile(file.filePath, effectiveConfig);
-      
+
       // Handle env files specially if configured
       if (isEnvFile && effectiveConfig.scanEnvFiles) {
         if (effectiveConfig.envFilesKeysOnly) {
           // Replace env file content with keys only
           file.content = this.extractEnvFileKeys(file.content);
-          
+
           // Add metadata about this transformation
           if (!file.meta) {
             file.meta = {};
           }
-          
+
           file.meta.securityTransformed = true;
           file.meta.securityTransformedReason = 'Env file values redacted, only keys included';
-          
+
           // Skip further scanning for this file
           continue;
         }
       }
-      
+
       // Scan file content for sensitive patterns
       const issues = this.scanContent(file.filePath, file.content, patterns);
-      
+
       if (issues.length > 0) {
         // Add security warnings to file metadata
         if (!file.meta) {
           file.meta = {};
         }
-        
+
         if (!file.meta.securityIssues) {
           file.meta.securityIssues = [];
         }
-        
+
         // Add each issue to metadata
         for (const issue of issues) {
           file.meta.securityIssues.push({
             scanner: this.id,
             severity: issue.severity,
-            message: `Found potential ${issue.name}`,
+            description: `Found potential ${issue.name}`,
             details: `Line ${issue.lineNumber}: ${issue.description}`,
-            lineNumber: issue.lineNumber
+            line: issue.lineNumber
           });
         }
       }
     }
-    
+
     return result;
   }
-  
+
   /**
    * Generate a security report for files
    * @param files Files to scan
@@ -191,21 +191,21 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
    */
   async generateSecurityReport(files: CollectedFile[], config?: SensitiveDataScannerConfig): Promise<SecurityReport> {
     const effectiveConfig = this.getEffectiveConfig(config);
-    
+
     // Combine built-in and custom patterns
     const patterns = [
       ...this.builtInPatterns,
       ...(effectiveConfig.customPatterns || [])
     ];
-    
+
     const issues: SecurityIssue[] = [];
     let filesWithIssues = 0;
-    
+
     // Process each file
     for (const file of files) {
       // Check if this is an env file
       const isEnvFile = this.isEnvFile(file.filePath, effectiveConfig);
-      
+
       // Handle env files specially if configured
       if (isEnvFile && effectiveConfig.scanEnvFiles) {
         if (effectiveConfig.envFilesKeysOnly) {
@@ -216,15 +216,15 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
             description: 'Env file values redacted, only keys included',
             remediation: 'No action needed, this is a security precaution'
           });
-          
+
           filesWithIssues++;
           continue;
         }
       }
-      
+
       // Scan file content for sensitive patterns
       const fileIssues = this.scanContent(file.filePath, file.content, patterns);
-      
+
       if (fileIssues.length > 0) {
         // Convert to SecurityIssue format
         for (const issue of fileIssues) {
@@ -233,22 +233,22 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
             lineNumber: issue.lineNumber,
             severity: issue.severity,
             description: `Found potential ${issue.name}`,
-            content: effectiveConfig.redactSensitiveData 
+            content: effectiveConfig.redactSensitiveData
               ? this.redactSensitiveData(issue.content)
               : issue.content
           });
         }
-        
+
         filesWithIssues++;
       }
     }
-    
+
     // Count issues by severity
     const issuesBySeverity = issues.reduce((acc, issue) => {
       acc[issue.severity] = (acc[issue.severity] || 0) + 1;
       return acc;
     }, {} as Record<SecurityIssueSeverity, number>);
-    
+
     return {
       scannerId: this.id,
       issues,
@@ -259,7 +259,7 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
       }
     };
   }
-  
+
   /**
    * Scan content for sensitive data patterns
    * @param filePath File path (for reporting)
@@ -268,36 +268,36 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
    * @returns Issues found
    */
   private scanContent(
-    filePath: string, 
-    content: string, 
+    filePath: string,
+    content: string,
     patterns: Array<{ name: string; pattern: string; severity: SecurityIssueSeverity }>
-  ): Array<{ 
-    name: string; 
-    severity: SecurityIssueSeverity; 
-    lineNumber: number; 
+  ): Array<{
+    name: string;
+    severity: SecurityIssueSeverity;
+    lineNumber: number;
     description: string;
     content: string;
   }> {
-    const issues: Array<{ 
-      name: string; 
-      severity: SecurityIssueSeverity; 
-      lineNumber: number; 
+    const issues: Array<{
+      name: string;
+      severity: SecurityIssueSeverity;
+      lineNumber: number;
       description: string;
       content: string;
     }> = [];
-    
+
     // Split content into lines
     const lines = content.split('\n');
-    
+
     // Check each line against each pattern
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       for (const { name, pattern, severity } of patterns) {
         try {
           const regex = new RegExp(pattern, 'g');
           const matches = line.matchAll(regex);
-          
+
           for (const match of matches) {
             issues.push({
               name,
@@ -308,14 +308,14 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
             });
           }
         } catch (error) {
-          console.warn(`Error with pattern ${name}:`, error.message);
+          console.warn(`Error with pattern ${name}:`, error instanceof Error ? error.message : String(error));
         }
       }
     }
-    
+
     return issues;
   }
-  
+
   /**
    * Check if a file is an env file
    * @param filePath File path
@@ -324,26 +324,26 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
    */
   private isEnvFile(filePath: string, config: SensitiveDataScannerConfig): boolean {
     const envFilePatterns = config.envFilePatterns || this.defaultEnvFilePatterns;
-    
+
     // Normalize path to use forward slashes
     const normalizedPath = filePath.replace(/\\/g, '/');
-    
+
     // Check against patterns
     for (const pattern of envFilePatterns) {
       if (this.matchesGlobPattern(normalizedPath, pattern)) {
         return true;
       }
     }
-    
+
     // Also check common env file names
     const basename = path.basename(filePath).toLowerCase();
     if (basename === '.env' || basename.startsWith('.env.') || basename === 'credentials.json') {
       return true;
     }
-    
+
     return false;
   }
-  
+
   /**
    * Extract keys from env file content
    * @param content Env file content
@@ -352,14 +352,14 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
   private extractEnvFileKeys(content: string): string {
     const lines = content.split('\n');
     const result: string[] = [];
-    
+
     for (const line of lines) {
       // Skip comments and empty lines
       if (line.trim().startsWith('#') || line.trim() === '') {
         result.push(line);
         continue;
       }
-      
+
       // Extract key from KEY=VALUE format
       const match = line.match(/^([^=]+)=(.*)$/);
       if (match) {
@@ -370,10 +370,10 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
         result.push(line);
       }
     }
-    
+
     return result.join('\n');
   }
-  
+
   /**
    * Redact sensitive data from a string
    * @param text Text containing sensitive data
@@ -389,11 +389,11 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
       const redactedMiddle = '*'.repeat(Math.min(middleLength, 10));
       return `${firstPart}${redactedMiddle}${lastPart}`;
     }
-    
+
     // For shorter strings, replace all with asterisks
     return '*'.repeat(text.length);
   }
-  
+
   /**
    * Check if a path matches a glob pattern
    * @param path Path to check
@@ -407,11 +407,11 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
       .replace(/\*\*/g, '.*')
       .replace(/\*/g, '[^/]*')
       .replace(/\?/g, '.');
-    
+
     const regex = new RegExp(`^${regexPattern}$`);
     return regex.test(path);
   }
-  
+
   /**
    * Get effective configuration with defaults
    * @param config User-provided configuration
@@ -426,7 +426,7 @@ export class SensitiveDataSecurityScanner implements SecurityScannerPlugin {
       envFilePatterns: config?.envFilePatterns || this.defaultEnvFilePatterns
     };
   }
-  
+
   /**
    * Clean up resources
    */

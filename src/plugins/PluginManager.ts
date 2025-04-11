@@ -20,22 +20,22 @@ export enum PluginType {
 export interface Plugin {
   /** Unique identifier for the plugin */
   id: string;
-  
+
   /** Human-readable name of the plugin */
   name: string;
-  
+
   /** Plugin type */
   type: PluginType;
-  
+
   /** Plugin version */
   version: string;
-  
+
   /** Plugin description */
   description: string;
-  
+
   /** Initialize the plugin */
   initialize?(): Promise<void>;
-  
+
   /** Clean up resources when plugin is disabled */
   cleanup?(): Promise<void>;
 }
@@ -45,7 +45,7 @@ export interface Plugin {
  */
 export interface SecurityScannerPlugin extends Plugin {
   type: PluginType.SECURITY_SCANNER;
-  
+
   /**
    * Scan files for security issues
    * @param files Files to scan
@@ -53,7 +53,7 @@ export interface SecurityScannerPlugin extends Plugin {
    * @returns Files with security warnings added to metadata
    */
   scanFiles(files: CollectedFile[], config?: any): Promise<CollectedFile[]>;
-  
+
   /**
    * Get security warnings as a separate report
    * @param files Files to scan
@@ -68,7 +68,7 @@ export interface SecurityScannerPlugin extends Plugin {
  */
 export interface OutputRendererPlugin extends Plugin {
   type: PluginType.OUTPUT_RENDERER;
-  
+
   /**
    * Render files to a specific output format
    * @param files Files to render
@@ -76,7 +76,7 @@ export interface OutputRendererPlugin extends Plugin {
    * @returns Rendered output
    */
   render(files: CollectedFile[], config?: any): Promise<string>;
-  
+
   /**
    * Get the format name for this renderer
    */
@@ -88,7 +88,7 @@ export interface OutputRendererPlugin extends Plugin {
  */
 export interface LLMReviewerPlugin extends Plugin {
   type: PluginType.LLM_REVIEWER;
-  
+
   /**
    * Review files using an LLM
    * @param files Files to review
@@ -96,7 +96,7 @@ export interface LLMReviewerPlugin extends Plugin {
    * @returns Reviewed files with additional metadata
    */
   reviewFiles(files: CollectedFile[], config?: any): Promise<CollectedFile[]>;
-  
+
   /**
    * Generate a summary of the files
    * @param files Files to summarize
@@ -104,7 +104,7 @@ export interface LLMReviewerPlugin extends Plugin {
    * @returns Summary text
    */
   generateSummary?(files: CollectedFile[], config?: any): Promise<string>;
-  
+
   /**
    * Check if the LLM is available (e.g., model is downloaded)
    */
@@ -127,19 +127,19 @@ export enum SecurityIssueSeverity {
 export interface SecurityIssue {
   /** File path where the issue was found */
   filePath: string;
-  
+
   /** Line number where the issue was found (1-based) */
   lineNumber?: number;
-  
+
   /** Issue severity */
   severity: SecurityIssueSeverity;
-  
+
   /** Issue description */
   description: string;
-  
+
   /** Suggested remediation */
   remediation?: string;
-  
+
   /** Raw content that triggered the issue (may be redacted for sensitive data) */
   content?: string;
 }
@@ -150,10 +150,10 @@ export interface SecurityIssue {
 export interface SecurityReport {
   /** Scanner that generated the report */
   scannerId: string;
-  
+
   /** Issues found */
   issues: SecurityIssue[];
-  
+
   /** Summary of findings */
   summary: {
     totalFiles: number;
@@ -170,7 +170,7 @@ export class PluginManager {
   private securityScanners: Map<string, SecurityScannerPlugin> = new Map();
   private outputRenderers: Map<string, OutputRendererPlugin> = new Map();
   private llmReviewers: Map<string, LLMReviewerPlugin> = new Map();
-  
+
   /**
    * Create a new plugin manager
    * @param pluginsDir Directory where plugins are located
@@ -181,21 +181,21 @@ export class PluginManager {
       this.pluginsDir = path.join(process.env.HOME || process.env.USERPROFILE || '', '.contextr', 'plugins');
     }
   }
-  
+
   /**
    * Load all plugins from the plugins directory
    */
   async loadPlugins(): Promise<void> {
     // Create plugins directory if it doesn't exist
     await fs.ensureDir(this.pluginsDir);
-    
+
     // Get all subdirectories in the plugins directory
     const pluginDirs = await fs.readdir(this.pluginsDir);
-    
+
     for (const dir of pluginDirs) {
       const pluginDir = path.join(this.pluginsDir, dir);
       const stat = await fs.stat(pluginDir);
-      
+
       if (stat.isDirectory()) {
         try {
           await this.loadPlugin(pluginDir);
@@ -204,44 +204,44 @@ export class PluginManager {
         }
       }
     }
-    
+
     console.log(`Loaded ${this.plugins.size} plugins`);
   }
-  
+
   /**
    * Load a plugin from a directory
    * @param pluginDir Directory containing the plugin
    */
   async loadPlugin(pluginDir: string): Promise<void> {
     const indexPath = path.join(pluginDir, 'index.js');
-    
+
     if (!await fs.pathExists(indexPath)) {
       throw new Error(`Plugin index.js not found in ${pluginDir}`);
     }
-    
+
     try {
       // Load the plugin
       const pluginModule = require(indexPath);
       const plugin = pluginModule.default || pluginModule;
-      
+
       // Validate plugin
       if (!plugin.id || !plugin.name || !plugin.type || !plugin.version) {
         throw new Error(`Invalid plugin format: missing required fields`);
       }
-      
+
       // Initialize plugin if needed
       if (plugin.initialize) {
         await plugin.initialize();
       }
-      
+
       // Register plugin
       this.registerPlugin(plugin);
-      
+
     } catch (error) {
-      throw new Error(`Failed to load plugin: ${error.message}`);
+      throw new Error(`Failed to load plugin: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  
+
   /**
    * Register a plugin with the manager
    * @param plugin Plugin to register
@@ -251,10 +251,10 @@ export class PluginManager {
     if (this.plugins.has(plugin.id)) {
       throw new Error(`Plugin with ID ${plugin.id} is already registered`);
     }
-    
+
     // Add to general plugins map
     this.plugins.set(plugin.id, plugin);
-    
+
     // Add to type-specific map
     switch (plugin.type) {
       case PluginType.SECURITY_SCANNER:
@@ -269,38 +269,38 @@ export class PluginManager {
       default:
         console.warn(`Unknown plugin type: ${plugin.type}`);
     }
-    
+
     console.log(`Registered plugin: ${plugin.name} (${plugin.id})`);
   }
-  
+
   /**
    * Get all registered plugins
    */
   getAllPlugins(): Plugin[] {
     return Array.from(this.plugins.values());
   }
-  
+
   /**
    * Get all security scanner plugins
    */
   getSecurityScanners(): SecurityScannerPlugin[] {
     return Array.from(this.securityScanners.values());
   }
-  
+
   /**
    * Get all output renderer plugins
    */
   getOutputRenderers(): OutputRendererPlugin[] {
     return Array.from(this.outputRenderers.values());
   }
-  
+
   /**
    * Get all LLM reviewer plugins
    */
   getLLMReviewers(): LLMReviewerPlugin[] {
     return Array.from(this.llmReviewers.values());
   }
-  
+
   /**
    * Get a plugin by ID
    * @param id Plugin ID
@@ -308,7 +308,7 @@ export class PluginManager {
   getPlugin(id: string): Plugin | undefined {
     return this.plugins.get(id);
   }
-  
+
   /**
    * Get a security scanner plugin by ID
    * @param id Plugin ID
@@ -316,7 +316,7 @@ export class PluginManager {
   getSecurityScanner(id: string): SecurityScannerPlugin | undefined {
     return this.securityScanners.get(id);
   }
-  
+
   /**
    * Get an output renderer plugin by ID
    * @param id Plugin ID
@@ -324,7 +324,7 @@ export class PluginManager {
   getOutputRenderer(id: string): OutputRendererPlugin | undefined {
     return this.outputRenderers.get(id);
   }
-  
+
   /**
    * Get an LLM reviewer plugin by ID
    * @param id Plugin ID
@@ -332,7 +332,7 @@ export class PluginManager {
   getLLMReviewer(id: string): LLMReviewerPlugin | undefined {
     return this.llmReviewers.get(id);
   }
-  
+
   /**
    * Run security scanners on files
    * @param files Files to scan
@@ -340,23 +340,23 @@ export class PluginManager {
    * @param config Configuration for scanners
    */
   async runSecurityScanners(
-    files: CollectedFile[], 
-    scannerIds?: string[], 
+    files: CollectedFile[],
+    scannerIds?: string[],
     config?: any
   ): Promise<CollectedFile[]> {
     let result = [...files];
-    
-    const scanners = scannerIds 
+
+    const scanners = scannerIds
       ? scannerIds.map(id => this.getSecurityScanner(id)).filter(Boolean) as SecurityScannerPlugin[]
       : this.getSecurityScanners();
-    
+
     for (const scanner of scanners) {
       result = await scanner.scanFiles(result, config);
     }
-    
+
     return result;
   }
-  
+
   /**
    * Generate security reports for files
    * @param files Files to scan
@@ -364,26 +364,26 @@ export class PluginManager {
    * @param config Configuration for scanners
    */
   async generateSecurityReports(
-    files: CollectedFile[], 
-    scannerIds?: string[], 
+    files: CollectedFile[],
+    scannerIds?: string[],
     config?: any
   ): Promise<SecurityReport[]> {
     const reports: SecurityReport[] = [];
-    
-    const scanners = scannerIds 
+
+    const scanners = scannerIds
       ? scannerIds.map(id => this.getSecurityScanner(id)).filter(Boolean) as SecurityScannerPlugin[]
       : this.getSecurityScanners();
-    
+
     for (const scanner of scanners) {
       if (scanner.generateSecurityReport) {
         const report = await scanner.generateSecurityReport(files, config);
         reports.push(report);
       }
     }
-    
+
     return reports;
   }
-  
+
   /**
    * Render files using an output renderer
    * @param files Files to render
@@ -391,19 +391,19 @@ export class PluginManager {
    * @param config Configuration for renderer
    */
   async renderOutput(
-    files: CollectedFile[], 
-    rendererId: string, 
+    files: CollectedFile[],
+    rendererId: string,
     config?: any
   ): Promise<string> {
     const renderer = this.getOutputRenderer(rendererId);
-    
+
     if (!renderer) {
       throw new Error(`Output renderer with ID ${rendererId} not found`);
     }
-    
+
     return await renderer.render(files, config);
   }
-  
+
   /**
    * Review files using LLM reviewers
    * @param files Files to review
@@ -411,16 +411,16 @@ export class PluginManager {
    * @param config Configuration for reviewers
    */
   async reviewFiles(
-    files: CollectedFile[], 
-    reviewerIds?: string[], 
+    files: CollectedFile[],
+    reviewerIds?: string[],
     config?: any
   ): Promise<CollectedFile[]> {
     let result = [...files];
-    
-    const reviewers = reviewerIds 
+
+    const reviewers = reviewerIds
       ? reviewerIds.map(id => this.getLLMReviewer(id)).filter(Boolean) as LLMReviewerPlugin[]
       : this.getLLMReviewers();
-    
+
     for (const reviewer of reviewers) {
       // Check if reviewer is available
       const available = await reviewer.isAvailable();
@@ -428,13 +428,13 @@ export class PluginManager {
         console.warn(`LLM reviewer ${reviewer.id} is not available, skipping`);
         continue;
       }
-      
+
       result = await reviewer.reviewFiles(result, config);
     }
-    
+
     return result;
   }
-  
+
   /**
    * Generate summaries for files using LLM reviewers
    * @param files Files to summarize
@@ -442,30 +442,30 @@ export class PluginManager {
    * @param config Configuration for reviewers
    */
   async generateSummaries(
-    files: CollectedFile[], 
-    reviewerIds?: string[], 
+    files: CollectedFile[],
+    reviewerIds?: string[],
     config?: any
   ): Promise<Record<string, string>> {
     const summaries: Record<string, string> = {};
-    
-    const reviewers = reviewerIds 
+
+    const reviewers = reviewerIds
       ? reviewerIds.map(id => this.getLLMReviewer(id)).filter(Boolean) as LLMReviewerPlugin[]
       : this.getLLMReviewers();
-    
+
     for (const reviewer of reviewers) {
       // Check if reviewer is available and has generateSummary method
       const available = await reviewer.isAvailable();
       if (!available || !reviewer.generateSummary) {
         continue;
       }
-      
+
       const summary = await reviewer.generateSummary(files, config);
       summaries[reviewer.id] = summary;
     }
-    
+
     return summaries;
   }
-  
+
   /**
    * Unload and clean up all plugins
    */
@@ -479,7 +479,7 @@ export class PluginManager {
         console.error(`Error cleaning up plugin ${id}:`, error);
       }
     }
-    
+
     this.plugins.clear();
     this.securityScanners.clear();
     this.outputRenderers.clear();

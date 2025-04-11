@@ -12,10 +12,10 @@ import { RegexPatternMatcher } from './RegexPatternMatcher';
 export interface EnhancedFileCollectorConfig extends FileCollectorConfig {
   /** Files to include in the tree but not their contents */
   listOnlyFiles?: string[];
-  
+
   /** Patterns for files to include in the tree but not their contents */
   listOnlyPatterns?: string[];
-  
+
   /** Whether to use regex for list-only patterns */
   useRegexForListOnly?: boolean;
 }
@@ -31,11 +31,11 @@ export function isListOnlyFile(filePath: string, config: EnhancedFileCollectorCo
   if (config.listOnlyFiles && config.listOnlyFiles.includes(filePath)) {
     return true;
   }
-  
+
   // Check list-only patterns
   if (config.listOnlyPatterns && config.listOnlyPatterns.length > 0) {
     const matcher = new RegexPatternMatcher();
-    
+
     for (const pattern of config.listOnlyPatterns) {
       if (config.useRegexForListOnly) {
         if (matcher.matchRegexPattern(filePath, pattern)) {
@@ -48,7 +48,7 @@ export function isListOnlyFile(filePath: string, config: EnhancedFileCollectorCo
       }
     }
   }
-  
+
   return false;
 }
 
@@ -61,14 +61,14 @@ export async function processListOnlyFile(filePath: string): Promise<CollectedFi
   try {
     // Get file stats
     const stats = await fs.stat(filePath);
-    
+
     // Get file extension
     const extension = path.extname(filePath).toLowerCase();
-    
+
     // Create placeholder content based on file type
     let placeholderContent = '';
     let fileType = '';
-    
+
     // Determine file type and create appropriate placeholder
     if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].includes(extension)) {
       fileType = 'image';
@@ -92,7 +92,7 @@ export async function processListOnlyFile(filePath: string): Promise<CollectedFi
       fileType = 'unknown';
       placeholderContent = `[File: ${path.basename(filePath)} (list-only)]`;
     }
-    
+
     // Create collected file
     return {
       filePath,
@@ -106,14 +106,14 @@ export async function processListOnlyFile(filePath: string): Promise<CollectedFi
     };
   } catch (error) {
     console.error(`Error processing list-only file ${filePath}:`, error);
-    
+
     // Return minimal information on error
     return {
       filePath,
       content: `[Error: Could not process file ${path.basename(filePath)}]`,
       meta: {
         isListOnly: true,
-        error: error.message
+        error: error instanceof Error ? error.message : String(error)
       }
     };
   }

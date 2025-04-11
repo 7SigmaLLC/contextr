@@ -8,11 +8,18 @@ import { RegexPatternMatcher } from "./RegexPatternMatcher";
  */
 export interface FileSearchResult {
   file: CollectedFile;
+  filePath?: string;
+  content?: string;
   matches: {
     line: number;
     content: string;
     matchIndex: number;
     matchLength: number;
+    contextContent?: string;
+    contextStartLine?: number;
+    contextEndLine?: number;
+    beforeContext?: string;
+    afterContext?: string;
   }[];
   matchCount: number;
 }
@@ -43,10 +50,10 @@ export class FileContentSearch {
     const { pattern, isRegex, caseSensitive, wholeWord } = options;
     const lines = file.content.split('\n');
     const matches: FileSearchResult['matches'] = [];
-    
+
     // Create regex pattern based on options
     let searchRegex: RegExp | null;
-    
+
     if (isRegex) {
       // Use RegexPatternMatcher to handle pattern with flags
       const flags = caseSensitive ? 'g' : 'gi';
@@ -60,17 +67,17 @@ export class FileContentSearch {
       const flags = caseSensitive ? 'g' : 'gi';
       searchRegex = new RegExp(escapedPattern, flags);
     }
-    
+
     if (!searchRegex) {
       console.error(`Invalid search pattern: ${pattern}`);
       return { file, matches: [], matchCount: 0 };
     }
-    
+
     // Search each line for matches
     lines.forEach((lineContent, lineIndex) => {
       let match;
       searchRegex!.lastIndex = 0; // Reset regex for each line
-      
+
       while ((match = searchRegex!.exec(lineContent)) !== null) {
         matches.push({
           line: lineIndex + 1, // 1-based line numbers
@@ -78,21 +85,21 @@ export class FileContentSearch {
           matchIndex: match.index,
           matchLength: match[0].length
         });
-        
+
         // Avoid infinite loops with zero-length matches
         if (match.index === searchRegex!.lastIndex) {
           searchRegex!.lastIndex++;
         }
       }
     });
-    
+
     return {
       file,
       matches,
       matchCount: matches.length
     };
   }
-  
+
   /**
    * Searches for content within multiple files
    * @param files Array of files to search in
@@ -103,15 +110,15 @@ export class FileContentSearch {
     const results = files
       .map(file => this.searchInFile(file, options))
       .filter(result => result.matchCount > 0);
-    
+
     // Limit results if maxResults is specified
     if (options.maxResults && results.length > options.maxResults) {
       return results.slice(0, options.maxResults);
     }
-    
+
     return results;
   }
-  
+
   /**
    * Gets context lines around a match
    * @param result Search result
@@ -122,35 +129,37 @@ export class FileContentSearch {
     if (contextLines <= 0) {
       return result;
     }
-    
+
     const lines = result.file.content.split('\n');
     const matchesWithContext = result.matches.map(match => {
       // Use RegexPatternMatcher's findMatchesWithContext for more robust context extraction
       const lineIndex = match.line - 1; // Convert to 0-based for array access
       const lineContent = lines[lineIndex];
-      
+
       const startLine = Math.max(0, lineIndex - contextLines);
       const endLine = Math.min(lines.length - 1, lineIndex + contextLines);
-      
-      // Create a new match object with context
+
+      // Add context lines to the match object
       const contextContent = lines.slice(startLine, endLine + 1).join('\n');
+      const beforeContext = lines.slice(startLine, lineIndex).join('\n');
+      const afterContext = lines.slice(lineIndex + 1, endLine + 1).join('\n');
+
       return {
         ...match,
-        content: lineContent, // Keep original line content for highlighting
-        contextContent: contextContent, // Add full context content
-        contextStartLine: startLine + 1, // 1-based line numbers
-        contextEndLine: endLine + 1, // 1-based line numbers
-        beforeContext: lines.slice(startLine, lineIndex).join('\n'),
-        afterContext: lines.slice(lineIndex + 1, endLine + 1).join('\n')
+        contextContent,
+        contextStartLine: startLine + 1, // Convert back to 1-based
+        contextEndLine: endLine + 1,    // Convert back to 1-based
+        beforeContext,
+        afterContext
       };
     });
-    
+
     return {
       ...result,
       matches: matchesWithContext as any
     };
   }
-  
+
   /**
    * Formats search results as a string
    * @param results Search results
@@ -159,41 +168,41 @@ export class FileContentSearch {
    * @returns Formatted string with search results
    */
   public static formatResults(
-    results: FileSearchResult[], 
+    results: FileSearchResult[],
     showFilePath: boolean = true,
     highlightMatches: boolean = true
   ): string {
     let output = '';
-    
+
     results.forEach(result => {
       if (showFilePath) {
         output += `\nFile: ${result.file.filePath} (${result.matchCount} matches)\n`;
         output += '='.repeat(result.file.filePath.length + 10) + '\n';
       }
-      
+
       result.matches.forEach(match => {
         // Check if we have context content (from addContextLines)
         if (match.contextContent) {
           // Show line numbers for context
           output += `Lines ${match.contextStartLine}-${match.contextEndLine}:\n`;
-          
+
           // Show before context if available
           if (match.beforeContext && match.beforeContext.length > 0) {
             output += match.beforeContext + '\n';
           }
-          
+
           // Show the matching line with highlighting
           if (highlightMatches && match.matchIndex >= 0) {
             const beforeMatch = match.content.substring(0, match.matchIndex);
             const matchText = match.content.substring(match.matchIndex, match.matchIndex + match.matchLength);
             const afterMatch = match.content.substring(match.matchIndex + match.matchLength);
-            
+
             output += `${beforeMatch}>>>${matchText}<<<${afterMatch}\n`;
             output += `Line ${match.line}: ` + ' '.repeat(match.matchIndex) + '^'.repeat(match.matchLength) + '\n';
           } else {
             output += `Line ${match.line}: ${match.content}\n`;
           }
-          
+
           // Show after context if available
           if (match.afterContext && match.afterContext.length > 0) {
             output += match.afterContext + '\n';
@@ -201,20 +210,20 @@ export class FileContentSearch {
         } else {
           // Original behavior for results without context
           output += `Line ${match.line}: ${match.content}\n`;
-          
+
           // Add a pointer to the match
           if (highlightMatches && match.matchIndex >= 0) {
             output += ' '.repeat(match.matchIndex + 7) + '^'.repeat(match.matchLength) + '\n';
           }
         }
-        
+
         output += '\n';
       });
     });
-    
+
     return output;
   }
-  
+
   /**
    * Searches for content in files and returns formatted results
    * @param files Array of files to search in
@@ -223,33 +232,33 @@ export class FileContentSearch {
    * @returns Formatted string with search results
    */
   public static search(
-    files: CollectedFile[], 
+    files: CollectedFile[],
     options: FileSearchOptions,
-    formatOptions: { 
-      showFilePath?: boolean, 
-      highlightMatches?: boolean 
+    formatOptions: {
+      showFilePath?: boolean,
+      highlightMatches?: boolean
     } = {}
   ): string {
     const results = this.searchInFiles(files, options);
-    
+
     if (options.contextLines && options.contextLines > 0) {
-      const resultsWithContext = results.map(result => 
+      const resultsWithContext = results.map(result =>
         this.addContextLines(result, options.contextLines)
       );
       return this.formatResults(
-        resultsWithContext, 
+        resultsWithContext,
         formatOptions.showFilePath !== undefined ? formatOptions.showFilePath : true,
         formatOptions.highlightMatches !== undefined ? formatOptions.highlightMatches : true
       );
     }
-    
+
     return this.formatResults(
       results,
       formatOptions.showFilePath !== undefined ? formatOptions.showFilePath : true,
       formatOptions.highlightMatches !== undefined ? formatOptions.highlightMatches : true
     );
   }
-  
+
   /**
    * Searches for content in files and returns results as JSON
    * @param files Array of files to search in
@@ -258,14 +267,14 @@ export class FileContentSearch {
    */
   public static searchAsJson(files: CollectedFile[], options: FileSearchOptions): any {
     const results = this.searchInFiles(files, options);
-    
+
     if (options.contextLines && options.contextLines > 0) {
       return results.map(result => this.addContextLines(result, options.contextLines));
     }
-    
+
     return results;
   }
-  
+
   /**
    * Searches for content in files and returns only matching file paths
    * @param files Array of files to search in
@@ -276,7 +285,7 @@ export class FileContentSearch {
     const results = this.searchInFiles(files, options);
     return results.map(result => result.file.filePath);
   }
-  
+
   /**
    * Counts matches across all files
    * @param files Array of files to search in

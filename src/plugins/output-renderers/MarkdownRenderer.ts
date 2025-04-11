@@ -2,9 +2,9 @@
 // This plugin renders context files to Markdown format
 
 import * as path from 'path';
-import { 
-  Plugin, 
-  PluginType, 
+import {
+  Plugin,
+  PluginType,
   OutputRendererPlugin
 } from '../PluginManager';
 import { CollectedFile } from '../../types';
@@ -15,19 +15,19 @@ import { CollectedFile } from '../../types';
 interface MarkdownRendererConfig {
   /** Include file metadata (default: true) */
   includeMetadata?: boolean;
-  
+
   /** Include table of contents (default: true) */
   includeTableOfContents?: boolean;
-  
+
   /** Include security warnings (default: true) */
   includeSecurityWarnings?: boolean;
-  
+
   /** Include line numbers (default: false) */
   includeLineNumbers?: boolean;
-  
+
   /** Custom title for the document (default: "Project Context") */
   title?: string;
-  
+
   /** Group files by directory (default: true) */
   groupByDirectory?: boolean;
 }
@@ -39,24 +39,24 @@ interface MarkdownRendererConfig {
 export class MarkdownRenderer implements OutputRendererPlugin {
   id = 'markdown-renderer';
   name = 'Markdown Renderer';
-  type = PluginType.OUTPUT_RENDERER;
+  type: PluginType.OUTPUT_RENDERER = PluginType.OUTPUT_RENDERER;
   version = '1.0.0';
   description = 'Renders context files to Markdown format with syntax highlighting';
-  
+
   /**
    * Initialize the plugin
    */
   async initialize(): Promise<void> {
     // Nothing to initialize
   }
-  
+
   /**
    * Get the format name for this renderer
    */
   getFormatName(): string {
     return 'markdown';
   }
-  
+
   /**
    * Render files to Markdown format
    * @param files Files to render
@@ -66,30 +66,30 @@ export class MarkdownRenderer implements OutputRendererPlugin {
   async render(files: CollectedFile[], config?: MarkdownRendererConfig): Promise<string> {
     const effectiveConfig = this.getEffectiveConfig(config);
     const output: string[] = [];
-    
+
     // Add title
     output.push(`# ${effectiveConfig.title}`);
     output.push('');
-    
+
     // Add summary
     output.push(`## Summary`);
     output.push('');
     output.push(`This context contains ${files.length} files.`);
-    
+
     // Add file size information
     const totalSize = files.reduce((sum, file) => sum + (file.meta?.size || 0), 0);
     output.push(`Total size: ${this.formatSize(totalSize)}`);
     output.push('');
-    
+
     // Add table of contents if enabled
     if (effectiveConfig.includeTableOfContents) {
       output.push(`## Table of Contents`);
       output.push('');
-      
+
       if (effectiveConfig.groupByDirectory) {
         // Group files by directory
         const filesByDirectory = this.groupFilesByDirectory(files);
-        
+
         for (const [directory, directoryFiles] of Object.entries(filesByDirectory)) {
           if (directory === '') {
             // Root directory
@@ -115,27 +115,27 @@ export class MarkdownRenderer implements OutputRendererPlugin {
           output.push(`- [${file.filePath}](#${anchor})`);
         }
       }
-      
+
       output.push('');
     }
-    
+
     // Add security warnings if enabled and present
     if (effectiveConfig.includeSecurityWarnings) {
-      const filesWithIssues = files.filter(file => 
+      const filesWithIssues = files.filter(file =>
         file.meta?.securityIssues && file.meta.securityIssues.length > 0
       );
-      
+
       if (filesWithIssues.length > 0) {
         output.push(`## Security Warnings`);
         output.push('');
         output.push('The following files have security warnings:');
         output.push('');
-        
+
         for (const file of filesWithIssues) {
           const issues = file.meta?.securityIssues || [];
           output.push(`### ${file.filePath}`);
           output.push('');
-          
+
           for (const issue of issues) {
             const severity = issue.severity || 'warning';
             output.push(`- **${severity.toUpperCase()}**: ${issue.message}`);
@@ -143,26 +143,26 @@ export class MarkdownRenderer implements OutputRendererPlugin {
               output.push(`  - ${issue.details}`);
             }
           }
-          
+
           output.push('');
         }
       }
     }
-    
+
     // Add file contents
     output.push(`## Files`);
     output.push('');
-    
+
     if (effectiveConfig.groupByDirectory) {
       // Group files by directory
       const filesByDirectory = this.groupFilesByDirectory(files);
-      
+
       for (const [directory, directoryFiles] of Object.entries(filesByDirectory)) {
         if (directory !== '') {
           output.push(`### Directory: ${directory}/`);
           output.push('');
         }
-        
+
         for (const file of directoryFiles) {
           this.renderFile(file, output, effectiveConfig);
         }
@@ -173,10 +173,10 @@ export class MarkdownRenderer implements OutputRendererPlugin {
         this.renderFile(file, output, effectiveConfig);
       }
     }
-    
+
     return output.join('\n');
   }
-  
+
   /**
    * Render a single file to Markdown
    * @param file File to render
@@ -184,30 +184,30 @@ export class MarkdownRenderer implements OutputRendererPlugin {
    * @param config Renderer configuration
    */
   private renderFile(
-    file: CollectedFile, 
-    output: string[], 
+    file: CollectedFile,
+    output: string[],
     config: MarkdownRendererConfig
   ): void {
     const anchor = this.createAnchor(file.filePath);
     output.push(`### <a id="${anchor}"></a>${file.filePath}`);
     output.push('');
-    
+
     // Add metadata if enabled
     if (config.includeMetadata && file.meta) {
       const metadataLines: string[] = [];
-      
+
       if (file.meta.size !== undefined) {
         metadataLines.push(`Size: ${this.formatSize(file.meta.size)}`);
       }
-      
+
       if (file.meta.lastModified) {
         metadataLines.push(`Last Modified: ${new Date(file.meta.lastModified).toISOString()}`);
       }
-      
+
       if (file.meta.type) {
         metadataLines.push(`Type: ${file.meta.type}`);
       }
-      
+
       if (metadataLines.length > 0) {
         output.push('**Metadata:**');
         for (const line of metadataLines) {
@@ -216,7 +216,7 @@ export class MarkdownRenderer implements OutputRendererPlugin {
         output.push('');
       }
     }
-    
+
     // Add security warnings if enabled and present
     if (config.includeSecurityWarnings && file.meta?.securityIssues && file.meta.securityIssues.length > 0) {
       output.push('**Security Warnings:**');
@@ -226,22 +226,22 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       }
       output.push('');
     }
-    
+
     // Add file content with syntax highlighting based on extension
     const extension = path.extname(file.filePath).substring(1);
     const language = this.getLanguageForExtension(extension);
-    
+
     if (config.includeLineNumbers) {
       // Add content with line numbers
       const lines = file.content.split('\n');
       const codeLines: string[] = [];
-      
+
       for (let i = 0; i < lines.length; i++) {
         const lineNumber = i + 1;
         const paddedLineNumber = lineNumber.toString().padStart(4, ' ');
         codeLines.push(`${paddedLineNumber}: ${lines[i]}`);
       }
-      
+
       output.push('```' + language);
       output.push(codeLines.join('\n'));
       output.push('```');
@@ -251,10 +251,10 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       output.push(file.content);
       output.push('```');
     }
-    
+
     output.push('');
   }
-  
+
   /**
    * Group files by directory
    * @param files Files to group
@@ -262,20 +262,20 @@ export class MarkdownRenderer implements OutputRendererPlugin {
    */
   private groupFilesByDirectory(files: CollectedFile[]): Record<string, CollectedFile[]> {
     const result: Record<string, CollectedFile[]> = {};
-    
+
     for (const file of files) {
       const directory = path.dirname(file.filePath);
-      
+
       if (!result[directory]) {
         result[directory] = [];
       }
-      
+
       result[directory].push(file);
     }
-    
+
     return result;
   }
-  
+
   /**
    * Create an anchor ID from a file path
    * @param filePath File path
@@ -287,7 +287,7 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       .replace(/\s+/g, '-')
       .toLowerCase();
   }
-  
+
   /**
    * Format file size in human-readable format
    * @param size Size in bytes
@@ -304,7 +304,7 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
     }
   }
-  
+
   /**
    * Get language identifier for syntax highlighting based on file extension
    * @param extension File extension
@@ -329,7 +329,7 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       'swift': 'swift',
       'kt': 'kotlin',
       'scala': 'scala',
-      
+
       // Web technologies
       'html': 'html',
       'htm': 'html',
@@ -340,36 +340,36 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       'json': 'json',
       'xml': 'xml',
       'svg': 'svg',
-      
+
       // Configuration files
       'yml': 'yaml',
       'yaml': 'yaml',
       'toml': 'toml',
       'ini': 'ini',
       'env': 'dotenv',
-      
+
       // Shell scripts
       'sh': 'bash',
       'bash': 'bash',
       'zsh': 'bash',
       'bat': 'batch',
       'ps1': 'powershell',
-      
+
       // Documentation
       'md': 'markdown',
       'markdown': 'markdown',
       'txt': 'text',
-      
+
       // Other
       'sql': 'sql',
       'graphql': 'graphql',
       'dockerfile': 'dockerfile',
       'gitignore': 'gitignore'
     };
-    
+
     return extensionMap[extension.toLowerCase()] || '';
   }
-  
+
   /**
    * Get effective configuration with defaults
    * @param config User-provided configuration
@@ -385,7 +385,7 @@ export class MarkdownRenderer implements OutputRendererPlugin {
       groupByDirectory: config?.groupByDirectory !== false
     };
   }
-  
+
   /**
    * Clean up resources
    */

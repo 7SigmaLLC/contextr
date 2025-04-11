@@ -15,7 +15,7 @@ export function registerPluginCommands(program: Command): void {
   const pluginsCommand = program
     .command('plugins')
     .description('Manage plugins');
-  
+
   // List plugins
   pluginsCommand
     .command('list')
@@ -25,26 +25,26 @@ export function registerPluginCommands(program: Command): void {
     .action(async (options) => {
       try {
         await pluginManager.loadPlugins();
-        
+
         let plugins = pluginManager.getAllPlugins();
-        
+
         // Filter by type if specified
         if (options.type) {
           plugins = plugins.filter(p => p.type === options.type);
         }
-        
+
         if (options.json) {
           console.log(JSON.stringify(plugins, null, 2));
           return;
         }
-        
+
         if (plugins.length === 0) {
           console.log('No plugins installed.');
           return;
         }
-        
+
         console.log(chalk.bold('Installed plugins:'));
-        
+
         // Group by type
         const byType = plugins.reduce((acc, plugin) => {
           if (!acc[plugin.type]) {
@@ -53,21 +53,21 @@ export function registerPluginCommands(program: Command): void {
           acc[plugin.type].push(plugin);
           return acc;
         }, {} as Record<string, any[]>);
-        
+
         for (const [type, typePlugins] of Object.entries(byType)) {
           console.log(chalk.cyan(`\n${formatPluginType(type)}:`));
-          
+
           for (const plugin of typePlugins) {
             console.log(`  ${chalk.green(plugin.name)} (${plugin.id}) v${plugin.version}`);
             console.log(`    ${plugin.description}`);
           }
         }
       } catch (error) {
-        console.error(chalk.red('Error listing plugins:'), error.message);
+        console.error(chalk.red('Error listing plugins:'), error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
     });
-  
+
   // Add plugin options to build command
   program.commands.forEach(cmd => {
     if (cmd.name() === 'build') {
@@ -82,7 +82,7 @@ export function registerPluginCommands(program: Command): void {
         .option('--summaries-file <file>', 'File to write summaries to');
     }
   });
-  
+
   // Add plugin options to search command
   program.commands.forEach(cmd => {
     if (cmd.name() === 'search') {
@@ -103,23 +103,23 @@ export function applyPluginOptions(config: any, options: any): void {
   if (options.enablePlugins) {
     config.enablePlugins = true;
   }
-  
+
   if (options.securityScanners) {
     config.securityScanners = options.securityScanners.split(',');
   }
-  
+
   if (options.outputRenderer) {
     config.outputRenderer = options.outputRenderer;
   }
-  
+
   if (options.llmReviewers) {
     config.llmReviewers = options.llmReviewers.split(',');
   }
-  
+
   if (options.generateSecurityReport) {
     config.generateSecurityReports = true;
   }
-  
+
   if (options.generateSummaries) {
     config.generateSummaries = true;
   }
@@ -137,30 +137,30 @@ export async function handlePluginOutput(result: any, options: any): Promise<voi
     await fs.writeJson(options.securityReportFile, result.securityReports, { spaces: 2 });
     console.log(chalk.green(`Security reports written to ${options.securityReportFile}`));
   }
-  
+
   // Write summaries to file if specified
   if (options.summariesFile && result.summaries && Object.keys(result.summaries).length > 0) {
     const fs = require('fs-extra');
     await fs.writeJson(options.summariesFile, result.summaries, { spaces: 2 });
     console.log(chalk.green(`Summaries written to ${options.summariesFile}`));
   }
-  
+
   // Display security issues in console
   if (result.securityReports && result.securityReports.length > 0) {
     console.log(chalk.yellow('\nSecurity issues found:'));
-    
+
     let totalIssues = 0;
-    
+
     for (const report of result.securityReports) {
       console.log(chalk.cyan(`\n${report.scannerId}:`));
-      
+
       if (report.issues.length === 0) {
         console.log('  No issues found');
         continue;
       }
-      
+
       totalIssues += report.issues.length;
-      
+
       // Group by severity
       const bySeverity = report.issues.reduce((acc, issue) => {
         if (!acc[issue.severity]) {
@@ -169,38 +169,38 @@ export async function handlePluginOutput(result: any, options: any): Promise<voi
         acc[issue.severity].push(issue);
         return acc;
       }, {} as Record<string, any[]>);
-      
+
       // Display issues by severity (critical first)
       const severities = ['critical', 'error', 'warning', 'info'];
-      
+
       for (const severity of severities) {
         if (bySeverity[severity]) {
           const color = getSeverityColor(severity);
           console.log(`  ${color(severity.toUpperCase())} (${bySeverity[severity].length}):`);
-          
+
           // Limit to 5 issues per severity to avoid overwhelming output
           const issuesToShow = bySeverity[severity].slice(0, 5);
           const remaining = bySeverity[severity].length - issuesToShow.length;
-          
+
           for (const issue of issuesToShow) {
             console.log(`    ${issue.filePath}${issue.lineNumber ? `:${issue.lineNumber}` : ''}`);
             console.log(`      ${issue.description}`);
           }
-          
+
           if (remaining > 0) {
             console.log(`    ... and ${remaining} more ${severity} issues`);
           }
         }
       }
     }
-    
+
     console.log(chalk.yellow(`\nTotal security issues: ${totalIssues}`));
   }
-  
+
   // Display summaries
   if (result.summaries && Object.keys(result.summaries).length > 0) {
     console.log(chalk.yellow('\nSummaries:'));
-    
+
     for (const [reviewerId, summary] of Object.entries(result.summaries)) {
       console.log(chalk.cyan(`\n${reviewerId}:`));
       console.log(summary);

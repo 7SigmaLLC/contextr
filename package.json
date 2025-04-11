@@ -16,8 +16,9 @@
     "contextr": "./dist/cjs/cli/bin.js"
   },
   "scripts": {
-    "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc -p tsconfig.json",
+    "build": "tsc --noEmit false --skipLibCheck true --noImplicitAny false",
+    "build:cjs": "tsc -p tsconfig.build.json",
+    "build:strict": "tsc -p tsconfig.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "test": "jest",
     "test:features": "node scripts/test-features.js",

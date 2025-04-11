@@ -57,7 +57,7 @@ export const collectorConfig: FileCollectorConfig = {
 
   // Option 2: Render as a strongly-typed JSON object
   const jsonRenderer = new JsonRenderer();
-  const output: FileContextJson = jsonRenderer.render(context);
+  const output = jsonRenderer.renderToObject(context);
 
   // Now you have a strongly typed JSON object.
   // console.log(chalk.bold.blueBright("Summary Statistics:", JSON.stringify(output.summary.statistics, null, 2)));

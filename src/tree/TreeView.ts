@@ -11,34 +11,34 @@ import { FileCollectorConfig } from '../types';
 export interface TreeViewConfig {
   /** Root directory to start from */
   rootDir: string;
-  
+
   /** Whether to include hidden files (default: false) */
   includeHidden?: boolean;
-  
+
   /** Maximum depth to traverse (default: Infinity) */
   maxDepth?: number;
-  
+
   /** File patterns to exclude */
   exclude?: string[];
-  
+
   /** File patterns to include */
   include?: string[];
-  
+
   /** Whether to use regex for pattern matching (default: false) */
   useRegex?: boolean;
-  
+
   /** Whether to include directories in the result (default: true) */
   includeDirs?: boolean;
-  
+
   /** Whether to include files in the result (default: true) */
   includeFiles?: boolean;
-  
+
   /** Whether to include file sizes (default: true) */
   includeSize?: boolean;
-  
+
   /** Whether to include file modification times (default: false) */
   includeModTime?: boolean;
-  
+
   /** Files to mark as "list-only" (contents won't be included) */
   listOnlyPatterns?: string[];
 }
@@ -49,22 +49,22 @@ export interface TreeViewConfig {
 export interface TreeNode {
   /** Path relative to root */
   path: string;
-  
+
   /** Full path */
   fullPath: string;
-  
+
   /** Whether this is a directory */
   isDirectory: boolean;
-  
+
   /** Children (for directories) */
   children?: TreeNode[];
-  
+
   /** File size in bytes (for files) */
   size?: number;
-  
+
   /** Last modification time (for files) */
   modTime?: Date;
-  
+
   /** Whether this file should be list-only (contents won't be included) */
   listOnly?: boolean;
 }
@@ -76,7 +76,7 @@ export interface TreeNode {
  */
 export async function generateTree(config: TreeViewConfig): Promise<TreeNode> {
   const effectiveConfig = getEffectiveConfig(config);
-  
+
   // Create root node
   const rootNode: TreeNode = {
     path: '',
@@ -84,10 +84,10 @@ export async function generateTree(config: TreeViewConfig): Promise<TreeNode> {
     isDirectory: true,
     children: []
   };
-  
+
   // Build tree recursively
   await buildTree(rootNode, effectiveConfig, 0);
-  
+
   return rootNode;
 }
 
@@ -98,46 +98,46 @@ export async function generateTree(config: TreeViewConfig): Promise<TreeNode> {
  * @param depth Current depth
  */
 async function buildTree(
-  node: TreeNode, 
-  config: TreeViewConfig, 
+  node: TreeNode,
+  config: TreeViewConfig,
   depth: number
 ): Promise<void> {
   // Check depth limit
   if (depth >= config.maxDepth!) {
     return;
   }
-  
+
   try {
     // Read directory contents
     const entries = await fs.readdir(node.fullPath, { withFileTypes: true });
-    
+
     // Process each entry
     for (const entry of entries) {
       const entryName = entry.name;
       const entryPath = path.join(node.path, entryName);
       const entryFullPath = path.join(node.fullPath, entryName);
-      
+
       // Skip hidden files if not included
       if (!config.includeHidden && entryName.startsWith('.')) {
         continue;
       }
-      
+
       // Check if entry should be excluded
       if (shouldExclude(entryPath, config)) {
         continue;
       }
-      
+
       // Check if entry should be included
       if (config.include && config.include.length > 0 && !shouldInclude(entryPath, config)) {
         continue;
       }
-      
+
       if (entry.isDirectory()) {
         // Skip directories if not included
         if (!config.includeDirs) {
           continue;
         }
-        
+
         // Create directory node
         const dirNode: TreeNode = {
           path: entryPath,
@@ -145,10 +145,10 @@ async function buildTree(
           isDirectory: true,
           children: []
         };
-        
+
         // Add to parent's children
         node.children!.push(dirNode);
-        
+
         // Process directory recursively
         await buildTree(dirNode, config, depth + 1);
       } else {
@@ -156,20 +156,20 @@ async function buildTree(
         if (!config.includeFiles) {
           continue;
         }
-        
+
         // Create file node
         const fileNode: TreeNode = {
           path: entryPath,
           fullPath: entryFullPath,
           isDirectory: false
         };
-        
+
         // Add file size if requested
         if (config.includeSize) {
           try {
             const stats = await fs.stat(entryFullPath);
             fileNode.size = stats.size;
-            
+
             // Add modification time if requested
             if (config.includeModTime) {
               fileNode.modTime = stats.mtime;
@@ -178,17 +178,17 @@ async function buildTree(
             console.warn(`Error getting stats for ${entryFullPath}:`, error);
           }
         }
-        
+
         // Check if file should be list-only
         if (isListOnly(entryPath, config)) {
           fileNode.listOnly = true;
         }
-        
+
         // Add to parent's children
         node.children!.push(fileNode);
       }
     }
-    
+
     // Sort children: directories first, then files, both alphabetically
     node.children!.sort((a, b) => {
       if (a.isDirectory && !b.isDirectory) {
@@ -214,7 +214,7 @@ function shouldExclude(relativePath: string, config: TreeViewConfig): boolean {
   if (!config.exclude || config.exclude.length === 0) {
     return false;
   }
-  
+
   for (const pattern of config.exclude) {
     if (config.useRegex) {
       try {
@@ -232,7 +232,7 @@ function shouldExclude(relativePath: string, config: TreeViewConfig): boolean {
       }
     }
   }
-  
+
   return false;
 }
 
@@ -246,7 +246,7 @@ function shouldInclude(relativePath: string, config: TreeViewConfig): boolean {
   if (!config.include || config.include.length === 0) {
     return true;
   }
-  
+
   for (const pattern of config.include) {
     if (config.useRegex) {
       try {
@@ -264,7 +264,7 @@ function shouldInclude(relativePath: string, config: TreeViewConfig): boolean {
       }
     }
   }
-  
+
   return false;
 }
 
@@ -278,7 +278,7 @@ function isListOnly(relativePath: string, config: TreeViewConfig): boolean {
   if (!config.listOnlyPatterns || config.listOnlyPatterns.length === 0) {
     return false;
   }
-  
+
   for (const pattern of config.listOnlyPatterns) {
     if (config.useRegex) {
       try {
@@ -296,7 +296,7 @@ function isListOnly(relativePath: string, config: TreeViewConfig): boolean {
       }
     }
   }
-  
+
   return false;
 }
 
@@ -313,7 +313,7 @@ function matchGlobPattern(path: string, pattern: string): boolean {
     .replace(/\*\*/g, '.*')
     .replace(/\*/g, '[^/]*')
     .replace(/\?/g, '.');
-  
+
   const regex = new RegExp(`^${regexPattern}$`);
   return regex.test(path);
 }
@@ -346,19 +346,19 @@ function getEffectiveConfig(config: TreeViewConfig): TreeViewConfig {
  */
 export function treeToFileList(tree: TreeNode): string[] {
   const result: string[] = [];
-  
+
   function traverse(node: TreeNode) {
     if (!node.isDirectory) {
       result.push(node.path);
     }
-    
+
     if (node.children) {
       for (const child of node.children) {
         traverse(child);
       }
     }
   }
-  
+
   traverse(tree);
   return result;
 }
@@ -370,7 +370,7 @@ export function treeToFileList(tree: TreeNode): string[] {
  * @returns Formatted tree string
  */
 export function formatTree(
-  tree: TreeNode, 
+  tree: TreeNode,
   options: {
     showSize?: boolean;
     showModTime?: boolean;
@@ -378,42 +378,42 @@ export function formatTree(
   } = {}
 ): string {
   const lines: string[] = [];
-  
+
   function traverse(node: TreeNode, prefix: string = '', isLast: boolean = true) {
     // Skip root node
     if (node.path !== '') {
       const nodeName = path.basename(node.path);
       const connector = isLast ? '└── ' : '├── ';
       let line = `${prefix}${connector}${nodeName}`;
-      
+
       // Add size if requested and available
       if (options.showSize && node.size !== undefined) {
         line += ` (${formatSize(node.size)})`;
       }
-      
+
       // Add modification time if requested and available
       if (options.showModTime && node.modTime) {
         line += ` [${node.modTime.toISOString()}]`;
       }
-      
+
       // Add list-only indicator if requested and applicable
       if (options.showListOnly && node.listOnly) {
         line += ' [list-only]';
       }
-      
+
       lines.push(line);
     }
-    
+
     if (node.children) {
       const childPrefix = node.path === '' ? '' : `${prefix}${isLast ? '    ' : '│   '}`;
-      
+
       for (let i = 0; i < node.children.length; i++) {
         const isLastChild = i === node.children.length - 1;
         traverse(node.children[i], childPrefix, isLastChild);
       }
     }
   }
-  
+
   traverse(tree);
   return lines.join('\n');
 }
@@ -441,31 +441,31 @@ function formatSize(size: number): string {
  * @param collectorConfig File collector configuration
  * @returns Updated file collector configuration
  */
-export function integrateTreeWithCollector(
+export async function integrateTreeWithCollector(
   treeConfig: TreeViewConfig,
   collectorConfig: FileCollectorConfig = {}
-): FileCollectorConfig {
+): Promise<FileCollectorConfig> {
   // Generate tree
-  return generateTree(treeConfig).then(tree => {
-    // Convert tree to file list
-    const fileList = treeToFileList(tree);
-    
-    // Create list-only patterns
-    const listOnlyPatterns = treeConfig.listOnlyPatterns || [];
-    
-    // Update collector config
-    const updatedConfig: FileCollectorConfig = {
-      ...collectorConfig,
-      includeFiles: [
-        ...(collectorConfig.includeFiles || []),
-        ...fileList.filter(file => !isListOnly(file, treeConfig))
-      ],
-      listOnlyFiles: [
-        ...(collectorConfig.listOnlyFiles || []),
-        ...fileList.filter(file => isListOnly(file, treeConfig))
-      ]
-    };
-    
-    return updatedConfig;
-  });
+  const tree = await generateTree(treeConfig);
+
+  // Convert tree to file list
+  const fileList = treeToFileList(tree);
+
+  // Create list-only patterns
+  const listOnlyPatterns = treeConfig.listOnlyPatterns || [];
+
+  // Update collector config
+  const updatedConfig: FileCollectorConfig = {
+    ...collectorConfig,
+    includeFiles: [
+      ...(collectorConfig.includeFiles || []),
+      ...fileList.filter(file => !isListOnly(file, treeConfig))
+    ],
+    listOnlyFiles: [
+      ...(collectorConfig.listOnlyFiles || []),
+      ...fileList.filter(file => isListOnly(file, treeConfig))
+    ]
+  };
+
+  return updatedConfig;
 }

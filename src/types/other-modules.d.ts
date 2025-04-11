@@ -21,9 +21,11 @@ declare module 'commander' {
     parse(argv: string[]): Command;
     help(): void;
     on(event: string, listener: (...args: any[]) => void): Command;
+    commands: Command[];
+    name(): string;
   }
-  
+
   function createCommand(): Command;
-  
+
   export { Command, createCommand };
 }

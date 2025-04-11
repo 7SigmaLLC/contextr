@@ -56,8 +56,8 @@ export class ConsoleRenderer implements Renderer<string> {
 
       // Statistics Section: compute overall stats based on file content.
       const totalFiles = files.length;
-      const totalLines = files.reduce((sum, file) => sum + file.lineCount, 0);
-      const totalSize = files.reduce((sum, file) => sum + file.fileSize, 0);
+      const totalLines = files.reduce((sum, file) => sum + (file.lineCount || 0), 0);
+      const totalSize = files.reduce((sum, file) => sum + (file.fileSize || 0), 0);
       const totalChars = files.reduce((sum, file) => sum + file.content.length, 0);
       // A rough heuristic: 1 token ≈ 4 characters.
       const estimatedTokens = Math.round(totalChars / 4);
@@ -75,7 +75,7 @@ export class ConsoleRenderer implements Renderer<string> {
   private buildTree(files: FileContext["files"]): TreeNode {
     const root: TreeNode = { name: ".", children: [], isFile: false };
     for (const file of files) {
-      const parts = file.relativePath.split(path.sep);
+      const parts = (file.relativePath || file.filePath).split(path.sep);
       let currentNode = root;
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];

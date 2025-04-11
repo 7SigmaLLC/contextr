@@ -4,7 +4,7 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import { GitIgnoreSecurityScanner } from '../plugins/security-scanners/GitIgnoreSecurityScanner';
-import { FileCollectorConfig, CollectedFile } from '../types';
+import { FileCollectorConfig, CollectedFile, SecurityIssueSeverity, PluginEnabledConfig } from '../types';
 
 /**
  * Configuration for GitIgnore integration
@@ -12,16 +12,16 @@ import { FileCollectorConfig, CollectedFile } from '../types';
 export interface GitIgnoreIntegrationConfig {
   /** Whether to use .gitignore files for security scanning (default: true) */
   useGitIgnore?: boolean;
-  
+
   /** Additional .gitignore files to use */
   additionalGitIgnoreFiles?: string[];
-  
+
   /** Whether to treat .gitignore matches as security issues (default: true) */
   treatGitIgnoreAsSecurityIssue?: boolean;
-  
+
   /** Whether to automatically exclude files matched by .gitignore (default: false) */
   autoExcludeGitIgnoreMatches?: boolean;
-  
+
   /** Whether to scan for sensitive patterns in files not excluded by .gitignore (default: true) */
   scanNonGitIgnoredFiles?: boolean;
 }
@@ -44,21 +44,21 @@ export async function integrateGitIgnoreSecurity(
     autoExcludeGitIgnoreMatches: gitIgnoreConfig.autoExcludeGitIgnoreMatches || false,
     scanNonGitIgnoredFiles: gitIgnoreConfig.scanNonGitIgnoredFiles !== false
   };
-  
+
   // Skip if not using GitIgnore
   if (!effectiveConfig.useGitIgnore) {
     return config;
   }
-  
+
   // Create GitIgnore scanner
   const scanner = new GitIgnoreSecurityScanner();
   await scanner.initialize();
-  
+
   // Find project root (directory containing .git)
   let projectRoot = process.cwd();
   let currentDir = projectRoot;
   let foundGit = false;
-  
+
   while (currentDir !== path.parse(currentDir).root) {
     if (await fs.pathExists(path.join(currentDir, '.git'))) {
       projectRoot = currentDir;
@@ -67,84 +67,91 @@ export async function integrateGitIgnoreSecurity(
     }
     currentDir = path.dirname(currentDir);
   }
-  
+
   if (!foundGit) {
     console.warn('No .git directory found, using current directory as project root');
   }
-  
+
   // Find all .gitignore files
   const gitIgnoreFiles = [
     path.join(projectRoot, '.gitignore'),
     ...effectiveConfig.additionalGitIgnoreFiles
   ].filter(async file => await fs.pathExists(file));
-  
+
   // Load .gitignore patterns
   await scanner.loadGitIgnoreFiles(gitIgnoreFiles);
-  
+
   // Create enhanced config
   const enhancedConfig = { ...config };
-  
+
   // Auto-exclude files matched by .gitignore if requested
   if (effectiveConfig.autoExcludeGitIgnoreMatches) {
     // Get all files that would be included
     const allFiles: string[] = [];
-    
+
     if (config.includeFiles) {
       allFiles.push(...config.includeFiles);
     }
-    
+
     if (config.includeDirs) {
       for (const dir of config.includeDirs) {
-        const files = await getAllFilesInDir(dir);
+        const files = await getAllFilesInDir(dir.path);
         allFiles.push(...files);
       }
     }
-    
+
     // Filter out files matched by .gitignore
     const filteredFiles = allFiles.filter(file => !scanner.isIgnored(file));
-    
+
     // Update config
     enhancedConfig.includeFiles = filteredFiles;
     enhancedConfig.includeDirs = [];
   }
-  
+
+  // Convert to PluginEnabledConfig
+  const pluginConfig = enhancedConfig as unknown as PluginEnabledConfig;
+
   // Add scanner to security scanners
-  if (!enhancedConfig.securityScanners) {
-    enhancedConfig.securityScanners = [];
+  if (!pluginConfig.securityScanners) {
+    pluginConfig.securityScanners = [];
   }
-  
-  enhancedConfig.securityScanners.push({
+
+  // Add a custom scanner function
+  const gitignoreScanner = {
     name: 'gitignore',
     scan: async (file: CollectedFile): Promise<CollectedFile> => {
       // Skip if file is already excluded
       if (effectiveConfig.autoExcludeGitIgnoreMatches) {
         return file;
       }
-      
+
       // Check if file is ignored by .gitignore
       const isIgnored = scanner.isIgnored(file.filePath);
-      
+
       // Add security issue if ignored and configured to treat as security issue
       if (isIgnored && effectiveConfig.treatGitIgnoreAsSecurityIssue) {
         if (!file.meta) {
           file.meta = {};
         }
-        
+
         if (!file.meta.securityIssues) {
           file.meta.securityIssues = [];
         }
-        
+
         file.meta.securityIssues.push({
-          message: 'File matches .gitignore pattern',
-          severity: 'warning',
+          description: 'File matches .gitignore pattern',
+          severity: SecurityIssueSeverity.WARNING,
           details: 'This file would be ignored by Git, which may indicate it contains sensitive information or should not be included in the context.'
         });
       }
-      
+
       return file;
     }
-  });
-  
+  };
+
+  // Add the scanner to the array
+  pluginConfig.securityScanners.push(gitignoreScanner as any);
+
   return enhancedConfig;
 }
 
@@ -155,13 +162,13 @@ export async function integrateGitIgnoreSecurity(
  */
 async function getAllFilesInDir(dir: string): Promise<string[]> {
   const result: string[] = [];
-  
+
   async function scanDir(currentDir: string) {
     const entries = await fs.readdir(currentDir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(currentDir, entry.name);
-      
+
       if (entry.isDirectory()) {
         await scanDir(fullPath);
       } else {
@@ -169,7 +176,7 @@ async function getAllFilesInDir(dir: string): Promise<string[]> {
       }
     }
   }
-  
+
   await scanDir(dir);
   return result;
 }
@@ -190,21 +197,21 @@ export async function applyGitIgnoreSecurity(
     additionalGitIgnoreFiles: gitIgnoreConfig.additionalGitIgnoreFiles || [],
     treatGitIgnoreAsSecurityIssue: gitIgnoreConfig.treatGitIgnoreAsSecurityIssue !== false
   };
-  
+
   // Skip if not using GitIgnore
   if (!effectiveConfig.useGitIgnore) {
     return files;
   }
-  
+
   // Create GitIgnore scanner
   const scanner = new GitIgnoreSecurityScanner();
   await scanner.initialize();
-  
+
   // Find project root (directory containing .git)
   let projectRoot = process.cwd();
   let currentDir = projectRoot;
   let foundGit = false;
-  
+
   while (currentDir !== path.parse(currentDir).root) {
     if (await fs.pathExists(path.join(currentDir, '.git'))) {
       projectRoot = currentDir;
@@ -213,42 +220,42 @@ export async function applyGitIgnoreSecurity(
     }
     currentDir = path.dirname(currentDir);
   }
-  
+
   if (!foundGit) {
     console.warn('No .git directory found, using current directory as project root');
   }
-  
+
   // Find all .gitignore files
   const gitIgnoreFiles = [
     path.join(projectRoot, '.gitignore'),
     ...effectiveConfig.additionalGitIgnoreFiles
   ].filter(async file => await fs.pathExists(file));
-  
+
   // Load .gitignore patterns
   await scanner.loadGitIgnoreFiles(gitIgnoreFiles);
-  
+
   // Process each file
   return Promise.all(files.map(async (file) => {
     // Check if file is ignored by .gitignore
     const isIgnored = scanner.isIgnored(file.filePath);
-    
+
     // Add security issue if ignored and configured to treat as security issue
     if (isIgnored && effectiveConfig.treatGitIgnoreAsSecurityIssue) {
       if (!file.meta) {
         file.meta = {};
       }
-      
+
       if (!file.meta.securityIssues) {
         file.meta.securityIssues = [];
       }
-      
+
       file.meta.securityIssues.push({
-        message: 'File matches .gitignore pattern',
-        severity: 'warning',
+        description: 'File matches .gitignore pattern',
+        severity: SecurityIssueSeverity.WARNING,
         details: 'This file would be ignored by Git, which may indicate it contains sensitive information or should not be included in the context.'
       });
     }
-    
+
     return file;
   }));
 }

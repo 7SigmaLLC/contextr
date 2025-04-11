@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContextR Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            height: 100vh;
+            background-color: #212529;
+            color: white;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+        .file-tree {
+            padding-left: 0;
+        }
+        .file-tree ul {
+            padding-left: 20px;
+        }
+        .file-tree li {
+            list-style-type: none;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .file-tree .folder {
+            color: #ffc107;
+        }
+        .file-tree .file {
+            color: #ffffff;
+        }
+        .file-tree .selected {
+            background-color: #0d6efd;
+            border-radius: 3px;
+            padding: 2px 5px;
+        }
+        .main-content {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+        .config-panel, .search-panel, .preview-panel {
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .context-item {
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .context-item .actions {
+            float: right;
+        }
+        .search-results {
+            margin-top: 20px;
+        }
+        .match-highlight {
+            background-color: #ffeb3b;
+            font-weight: bold;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .logo i {
+            margin-right: 10px;
+            color: #0d6efd;
+        }
+        .drag-handle {
+            cursor: move;
+            padding: 5px;
+        }
+        .pattern-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            margin: 5px;
+        }
+        .pattern-tag .remove {
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        .preview-code {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+        }
+        .status-bar {
+            background-color: #343a40;
+            color: white;
+            padding: 5px 15px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar with file tree -->
+            <div class="col-md-3 sidebar">
+                <div class="logo">
+                    <i class="bi bi-braces"></i> ContextR Studio
+                </div>
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" id="path-input" class="form-control form-control-sm" placeholder="Path" value=".">
+                        <button class="btn btn-outline-light btn-sm" id="browse-btn">Browse</button>
+                    </div>
+                </div>
+                <div class="file-tree" id="file-tree">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-light" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <div class="col-md-9 main-content">
+                <ul class="nav nav-tabs" id="main-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="config" aria-selected="true">
+                            <i class="bi bi-gear"></i> Configuration
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="search-tab" data-bs-toggle="tab" data-bs-target="#search" type="button" role="tab" aria-controls="search" aria-selected="false">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab" aria-controls="preview" aria-selected="false">
+                            <i class="bi bi-eye"></i> Preview
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="main-tabs-content">
+                    <!-- Configuration Tab -->
+                    <div class="tab-pane fade show active" id="config" role="tabpanel" aria-labelledby="config-tab">
+                        <div class="config-panel">
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <h4>Context Configuration</h4>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="load-config-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-folder-open"></i> Load
+                                        </button>
+                                        <ul class="dropdown-menu" id="config-list">
+                                            <li><a class="dropdown-item" href="#">Loading...</a></li>
+                                        </ul>
+                                    </div>
+                                    <button class="btn btn-outline-primary" id="save-config-btn">
+                                        <i class="bi bi-save"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="context-name" class="form-label">Context Name</label>
+                                <input type="text" class="form-control" id="context-name" placeholder="My Project Context" value="Project Context">
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="show-contents" checked>
+                                        <label class="form-check-label" for="show-contents">
+                                            Show File Contents
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="show-meta" checked>
+                                        <label class="form-check-label" for="show-meta">
+                                            Show Metadata
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="use-regex">
+                                        <label class="form-check-label" for="use-regex">
+                                            Use Regex for Pattern Matching
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="mt-4">Included Directories</h5>
+                            <div id="include-dirs">
+                                <!-- Directory items will be added here -->
+                            </div>
+                            <button class="btn btn-sm btn-outline-success mt-2" id="add-dir-btn">
+                                <i class="bi bi-plus-circle"></i> Add Directory
+                            </button>
+
+                            <h5 class="mt-4">Included Files</h5>
+                            <div id="include-files-container">
+                                <div class="pattern-tags" id="include-files">
+                                    <!-- File patterns will be added here -->
+                                </div>
+                                <div class="input-group mt-2">
+                                    <input type="text" class="form-control" id="include-file-input" placeholder="Add file pattern (e.g., *.js, src/index.ts)">
+                                    <button class="btn btn-outline-primary" id="add-include-file-btn">Add</button>
+                                </div>
+                            </div>
+
+                            <h5 class="mt-4">Excluded Files</h5>
+                            <div id="exclude-files-container">
+                                <div class="pattern-tags" id="exclude-files">
+                                    <!-- Exclude patterns will be added here -->
+                                </div>
+                                <div class="input-group mt-2">
+                                    <input type="text" class="form-control" id="exclude-file-input" placeholder="Add exclude pattern (e.g., node_modules/**, *.test.js)">
+                                    <button class="btn btn-outline-primary" id="add-exclude-file-btn">Add</button>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button class="btn btn-primary" id="build-context-btn">
+                                    <i class="bi bi-gear"></i> Build Context
+                                </button>
+                                <button class="btn btn-outline-secondary" id="reset-config-btn">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Tab -->
+                    <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
+                        <div class="search-panel">
+                            <h4>Search in Files</h4>
+                            <div class="mb-3">
+                                <label for="search-pattern" class="form-label">Search Pattern</label>
+                                <input type="text" class="form-control" id="search-pattern" placeholder="Enter search pattern">
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="search-regex">
+                                        <label class="form-check-label" for="search-regex">
+                                            Use Regex
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="case-sensitive">
+                                        <label class="form-check-label" for="case-sensitive">
+                                            Case Sensitive
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="whole-word">
+                                        <label class="form-check-label" for="whole-word">
+                                            Whole Word
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="context-lines" class="form-label">Context Lines</label>
+                                <input type="number" class="form-control" id="context-lines" min="0" max="10" value="2">
+                            </div>
+
+                            <button class="btn btn-primary" id="search-btn">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+
+                            <div class="search-results mt-4" id="search-results">
+                                <!-- Search results will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Tab -->
+                    <div class="tab-pane fade" id="preview" role="tabpanel" aria-labelledby="preview-tab">
+                        <div class="preview-panel">
+                            <h4>Context Preview</h4>
+                            <div class="mb-3">
+                                <select class="form-select" id="preview-format">
+                                    <option value="console">Console Format</option>
+                                    <option value="json">JSON Format</option>
+                                </select>
+                            </div>
+                            <div class="preview-content" id="preview-content">
+                                <div class="alert alert-info">
+                                    Build context first to see the preview.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="row">
+            <div class="col-md-4" id="status-message">Ready</div>
+            <div class="col-md-4 text-center" id="status-files">Files: 0</div>
+            <div class="col-md-4 text-end" id="status-version">ContextR v1.0.17</div>
+        </div>
+    </div>
+
+    <!-- Modal for Directory Configuration -->
+    <div class="modal fade" id="dir-config-modal" tabindex="-1" aria-labelledby="dir-config-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dir-config-modal-label">Directory Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="dir-path" class="form-label">Directory Path</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="dir-path" placeholder="./src">
+                            <button class="btn btn-outline-secondary" id="browse-dir-btn">Browse</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="include-patterns" class="form-label">Include Patterns</label>
+                        <div id="dir-include-patterns">
+                            <div class="pattern-tags" id="dir-include-tags">
+                                <!-- Include patterns will be added here -->
+                            </div>
+                            <div class="input-group mt-2">
+                                <input type="text" class="form-control" id="dir-include-input" placeholder="Add pattern (e.g., *.js, **/*.ts)">
+                                <button class="btn btn-outline-primary" id="add-dir-include-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exclude-patterns" class="form-label">Exclude Patterns</label>
+                        <div id="dir-exclude-patterns">
+                            <div class="pattern-tags" id="dir-exclude-tags">
+                                <!-- Exclude patterns will be added here -->
+                            </div>
+                            <div class="input-group mt-2">
+                                <input type="text" class="form-control" id="dir-exclude-input" placeholder="Add pattern (e.g., node_modules/**, *.test.js)">
+                                <button class="btn btn-outline-primary" id="add-dir-exclude-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="dir-recursive" checked>
+                        <label class="form-check-label" for="dir-recursive">
+                            Recursive (include subdirectories)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="dir-use-regex">
+                        <label class="form-check-label" for="dir-use-regex">
+                            Use Regex for Pattern Matching
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-dir-config-btn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Save Configuration -->
+    <div class="modal fade" id="save-config-modal" tabindex="-1" aria-labelledby="save-config-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="save-config-modal-label">Save Configuration</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="config-name" class="form-label">Configuration Name</label>
+                        <input type="text" class="form-control" id="config-name" placeholder="my-project-config">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirm-save-config-btn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

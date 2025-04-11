@@ -1,0 +1,126 @@
+// Studio UI screenshot mockup
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bg-dark { fill: #212529; }
+    .bg-light { fill: #f8f9fa; }
+    .bg-white { fill: #ffffff; }
+    .text-light { fill: #f8f9fa; font-family: 'Arial', sans-serif; }
+    .text-dark { fill: #212529; font-family: 'Arial', sans-serif; }
+    .text-primary { fill: #0d6efd; font-family: 'Arial', sans-serif; }
+    .border { stroke: #dee2e6; stroke-width: 1; }
+    .border-primary { stroke: #0d6efd; stroke-width: 2; }
+    .folder { fill: #ffc107; }
+    .file { fill: #ffffff; }
+    .btn-primary { fill: #0d6efd; }
+    .btn-outline { fill: none; stroke: #6c757d; stroke-width: 1; }
+    .highlight { fill: #ffeb3b; }
+  </style>
+  
+  <!-- Main layout -->
+  <rect width="800" height="500" class="bg-light" />
+  
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="250" height="500" class="bg-dark" />
+  
+  <!-- Logo in sidebar -->
+  <text x="125" y="40" class="text-light" font-size="20" font-weight="bold" text-anchor="middle">
+    <tspan fill="#0d6efd">C</tspan>ontextR Studio
+  </text>
+  
+  <!-- Path input -->
+  <rect x="20" y="60" width="180" height="25" rx="3" ry="3" fill="#ffffff" />
+  <text x="30" y="77" class="text-dark" font-size="12">./src</text>
+  <rect x="200" y="60" width="30" height="25" rx="3" ry="3" class="btn-outline" />
+  <text x="215" y="77" class="text-light" font-size="12" text-anchor="middle">Go</text>
+  
+  <!-- File tree -->
+  <rect x="20" y="100" width="210" height="380" rx="3" ry="3" fill="#343a40" />
+  <text x="40" y="125" class="text-light" font-size="12">
+    <tspan class="folder">▶</tspan> src
+  </text>
+  <text x="60" y="150" class="text-light" font-size="12">
+    <tspan class="folder">▶</tspan> collector
+  </text>
+  <text x="60" y="175" class="text-light" font-size="12">
+    <tspan class="folder">▶</tspan> renderers
+  </text>
+  <text x="60" y="200" class="text-light" font-size="12">
+    <tspan class="folder">▶</tspan> types
+  </text>
+  <text x="60" y="225" class="text-light" font-size="12">
+    <tspan class="folder">▶</tspan> cli
+  </text>
+  <text x="40" y="250" class="text-light" font-size="12">
+    <tspan class="file">📄</tspan> index.ts
+  </text>
+  <text x="40" y="275" class="text-light" font-size="12">
+    <tspan class="file">📄</tspan> FileContextBuilder.ts
+  </text>
+  <text x="40" y="300" class="text-light" font-size="12">
+    <tspan class="file">📄</tspan> example-usage.ts
+  </text>
+  <text x="40" y="325" class="text-light" font-size="12">
+    <tspan class="file">📄</tspan> package.json
+  </text>
+  <text x="40" y="350" class="text-light" font-size="12">
+    <tspan class="file">📄</tspan> README.md
+  </text>
+  
+  <!-- Main content area -->
+  <rect x="250" y="0" width="550" height="500" class="bg-light" />
+  
+  <!-- Tabs -->
+  <rect x="270" y="20" width="150" height="30" rx="5" ry="5" class="bg-white border-primary" />
+  <text x="345" y="40" class="text-primary" font-size="14" text-anchor="middle">Configuration</text>
+  
+  <rect x="420" y="20" width="100" height="30" rx="5" ry="5" class="bg-light border" />
+  <text x="470" y="40" class="text-dark" font-size="14" text-anchor="middle">Search</text>
+  
+  <rect x="520" y="20" width="100" height="30" rx="5" ry="5" class="bg-light border" />
+  <text x="570" y="40" class="text-dark" font-size="14" text-anchor="middle">Preview</text>
+  
+  <!-- Configuration panel -->
+  <rect x="270" y="70" width="510" height="410" rx="5" ry="5" class="bg-white border" />
+  
+  <!-- Config header -->
+  <text x="290" y="100" class="text-dark" font-size="18" font-weight="bold">Context Configuration</text>
+  
+  <!-- Config form -->
+  <text x="290" y="140" class="text-dark" font-size="14">Context Name</text>
+  <rect x="290" y="150" width="470" height="30" rx="3" ry="3" class="bg-light border" />
+  <text x="300" y="170" class="text-dark" font-size="12">Project Context</text>
+  
+  <!-- Checkboxes -->
+  <rect x="290" y="190" width="15" height="15" class="bg-white border" />
+  <text x="315" y="203" class="text-dark" font-size="14">Show File Contents</text>
+  
+  <rect x="450" y="190" width="15" height="15" class="bg-white border" />
+  <text x="475" y="203" class="text-dark" font-size="14">Show Metadata</text>
+  
+  <!-- Included Directories -->
+  <text x="290" y="240" class="text-dark" font-size="16" font-weight="bold">Included Directories</text>
+  
+  <rect x="290" y="250" width="470" height="60" rx="3" ry="3" class="bg-light border" />
+  <text x="310" y="270" class="text-dark" font-size="14" font-weight="bold">./src</text>
+  <text x="310" y="290" class="text-dark" font-size="12">Include: **/*.ts, Recursive: Yes</text>
+  
+  <!-- Included Files -->
+  <text x="290" y="330" class="text-dark" font-size="16" font-weight="bold">Included Files</text>
+  
+  <rect x="290" y="340" width="80" height="25" rx="15" ry="15" class="bg-light border" />
+  <text x="330" y="357" class="text-dark" font-size="12" text-anchor="middle">README.md</text>
+  
+  <rect x="380" y="340" width="100" height="25" rx="15" ry="15" class="bg-light border" />
+  <text x="430" y="357" class="text-dark" font-size="12" text-anchor="middle">package.json</text>
+  
+  <!-- Excluded Files -->
+  <text x="290" y="390" class="text-dark" font-size="16" font-weight="bold">Excluded Files</text>
+  
+  <rect x="290" y="400" width="120" height="25" rx="15" ry="15" class="bg-light border" />
+  <text x="350" y="417" class="text-dark" font-size="12" text-anchor="middle">node_modules/**</text>
+  
+  <!-- Build button -->
+  <rect x="290" y="440" width="120" height="30" rx="3" ry="3" class="btn-primary" />
+  <text x="350" y="460" class="text-light" font-size="14" text-anchor="middle">Build Context</text>
+</svg>

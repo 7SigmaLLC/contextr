@@ -21,18 +21,26 @@ export interface FileContextJson {
 
 export class JsonRenderer implements Renderer {
   /**
+   * Returns the rendered output as a string.
+   */
+  render(context: FileContext): string {
+    const jsonData = this.renderToObject(context);
+    return JSON.stringify(jsonData, null, 2);
+  }
+
+  /**
    * Returns the rendered output as a typed object.
    */
-  render(context: FileContext): FileContextJson {
+  renderToObject(context: FileContext): FileContextJson {
     const includedFiles = context.files.map(file => ({
       filePath: file.filePath,
-      fileSize: file.fileSize,
-      lineCount: file.lineCount,
+      fileSize: file.fileSize || 0,
+      lineCount: file.lineCount || 0,
     }));
 
     const totalFiles = context.files.length;
-    const totalLines = context.files.reduce((sum, file) => sum + file.lineCount, 0);
-    const totalSize = context.files.reduce((sum, file) => sum + file.fileSize, 0);
+    const totalLines = context.files.reduce((sum, file) => sum + (file.lineCount || 0), 0);
+    const totalSize = context.files.reduce((sum, file) => sum + (file.fileSize || 0), 0);
     const totalChars = context.files.reduce((sum, file) => sum + file.content.length, 0);
     // A rough heuristic: 1 token ≈ 4 characters.
     const estimatedTokens = Math.round(totalChars / 4);

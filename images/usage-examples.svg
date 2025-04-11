@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bg-light { fill: #f8f9fa; }
+    .bg-white { fill: #ffffff; }
+    .text-dark { fill: #212529; font-family: 'Arial', sans-serif; }
+    .text-primary { fill: #0d6efd; font-family: 'Arial', sans-serif; }
+    .border { stroke: #dee2e6; stroke-width: 1; }
+    .box { fill: #ffffff; stroke: #0d6efd; stroke-width: 2; }
+    .highlight { fill: #e9ecef; }
+    .code { font-family: 'Courier New', monospace; fill: #212529; }
+  </style>
+  
+  <!-- Main background -->
+  <rect width="800" height="400" class="bg-light" />
+  
+  <!-- Title -->
+  <text x="400" y="40" class="text-primary" font-size="24" font-weight="bold" text-anchor="middle">ContextR Usage Examples</text>
+  
+  <!-- CommonJS Example -->
+  <rect x="50" y="80" width="340" height="280" rx="5" ry="5" class="bg-white border" />
+  <text x="220" y="110" class="text-dark" font-size="18" font-weight="bold" text-anchor="middle">CommonJS Usage</text>
+  
+  <rect x="70" y="130" width="300" height="210" rx="3" ry="3" class="highlight" />
+  <text x="80" y="150" class="code" font-size="12">
+    <tspan x="80" dy="0">const { FileContextBuilder,</tspan>
+    <tspan x="80" dy="16">  ConsoleRenderer,</tspan>
+    <tspan x="80" dy="16">  WhitelistBlacklist } = require('contextr');</tspan>
+    <tspan x="80" dy="24">// Create configuration</tspan>
+    <tspan x="80" dy="16">const config = {</tspan>
+    <tspan x="80" dy="16">  name: "My Project",</tspan>
+    <tspan x="80" dy="16">  showContents: true,</tspan>
+    <tspan x="80" dy="16">  showMeta: true,</tspan>
+    <tspan x="80" dy="16">  includeDirs: [</tspan>
+    <tspan x="80" dy="16">    {</tspan>
+    <tspan x="80" dy="16">      path: "./src",</tspan>
+    <tspan x="80" dy="16">      include: ["**/*.js"],</tspan>
+    <tspan x="80" dy="16">      recursive: true</tspan>
+    <tspan x="80" dy="16">    }</tspan>
+    <tspan x="80" dy="16">  ]</tspan>
+    <tspan x="80" dy="16">};</tspan>
+  </text>
+  
+  <!-- ES Module Example -->
+  <rect x="410" y="80" width="340" height="280" rx="5" ry="5" class="bg-white border" />
+  <text x="580" y="110" class="text-dark" font-size="18" font-weight="bold" text-anchor="middle">ES Module Usage</text>
+  
+  <rect x="430" y="130" width="300" height="210" rx="3" ry="3" class="highlight" />
+  <text x="440" y="150" class="code" font-size="12">
+    <tspan x="440" dy="0">import {</tspan>
+    <tspan x="440" dy="16">  FileContextBuilder,</tspan>
+    <tspan x="440" dy="16">  ConsoleRenderer,</tspan>
+    <tspan x="440" dy="16">  WhitelistBlacklist</tspan>
+    <tspan x="440" dy="16">} from 'contextr';</tspan>
+    <tspan x="440" dy="24">// Create configuration</tspan>
+    <tspan x="440" dy="16">const config = {</tspan>
+    <tspan x="440" dy="16">  name: "My Project",</tspan>
+    <tspan x="440" dy="16">  showContents: true,</tspan>
+    <tspan x="440" dy="16">  showMeta: true,</tspan>
+    <tspan x="440" dy="16">  includeDirs: [</tspan>
+    <tspan x="440" dy="16">    {</tspan>
+    <tspan x="440" dy="16">      path: "./src",</tspan>
+    <tspan x="440" dy="16">      include: ["**/*.js"],</tspan>
+    <tspan x="440" dy="16">      recursive: true</tspan>
+    <tspan x="440" dy="16">    }</tspan>
+    <tspan x="440" dy="16">  ]</tspan>
+    <tspan x="440" dy="16">};</tspan>
+  </text>
+</svg>

@@ -1,7 +1,9 @@
 export interface IncludeDirConfig {
     path: string;
     include: string[];
+    exclude?: string[];
     recursive: boolean;
+    useRegex?: boolean;
   }
   
   export interface FileCollectorConfig {
@@ -10,6 +12,12 @@ export interface IncludeDirConfig {
     showMeta: boolean;
     includeDirs?: IncludeDirConfig[];
     includeFiles?: string[];
+    excludeFiles?: string[];
+    useRegex?: boolean;
+    searchInFiles?: {
+      pattern: string;
+      isRegex: boolean;
+    };
   }
   
   export interface CollectedFile {

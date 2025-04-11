@@ -1,122 +1,339 @@
-# Contextr
+# contextr
 
+![contextr logo](./images/logo.svg)
 
-[![npm version](https://img.shields.io/npm/v/contextr.svg)](https://www.npmjs.com/package/contextr)
-[![Build Status](https://github.com/7SigmaLLC/contextr/workflows/CI/badge.svg)](https://github.com/7SigmaLLC/contextr/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](https://www.typescriptlang.org/)
+A powerful tool for collecting and packaging code files for LLM context.
 
-Contextr is a lightweight library that **packages your project’s code files into structured context**—ready to be consumed by Large Language Models (LLMs). It enables **single-shot code context generation** for LLM prompting and supports **dynamic packaging for LLM agents** that require iterative file submission.
+## Overview
 
-## 🎯 Why We Built It: LLM Workflows Need Precision, Not Guesswork
+contextr is a TypeScript library that helps you build context for Large Language Models (LLMs) by collecting and packaging code files from your project. It provides a flexible and powerful way to include specific files, directories, and patterns in your context, with advanced features for security, visualization, and customization.
 
-Copilot, Replit, and other AI-assisted IDEs attempt to provide context, but they fall short in critical ways:
+## Features
 
- - ***Limited & Unpredictable Context***: They typically rely on open file editors or recent edits, meaning you don’t fully control what gets sent to the AI.
- - ***Potentially Leaking Sensitive Files***: Without fine-grained selection, they may include files unintentionally, exposing sensitive or unnecessary data.
- - ***No Granular Control***: Customizing context in each tool’s own way is inconsistent and time-consuming, making AI-driven development slower, not faster.
+- **File Collection**: Include specific files, directories, or glob patterns
+- **Regex Pattern Matching**: Use regular expressions for more powerful file matching
+- **Whitelist/Blacklist**: Precisely control which files are included or excluded
+- **In-file Search**: Search for specific content within files
+- **Tree View**: Display the full project tree structure
+- **List-only Mode**: Include files in the tree without their contents
+- **Security Features**:
+  - GitIgnore Integration: Automatically exclude files matched by .gitignore
+  - Sensitive Data Detection: Identify potential API keys, passwords, and other sensitive information
+  - Special handling for env files: Option to include only keys without values
+- **Plugin System**:
+  - Security Scanners: Detect and report security issues
+  - Output Renderers: Format context in different ways (Console, JSON, Markdown, HTML)
+  - LLM Reviewers: Use local LLMs to review and summarize code
+- **CLI Interface**: Powerful command-line interface with comprehensive options
+- **UI Studio Mode**: Visual interface for building context and managing files
 
-## Why Contextr?
-
-AI-assisted development needs a precise, structured way to send LLMs exactly what they need—nothing more, nothing less.
-
-✅ Absolute Control Over Context: Hand-pick the exact files the AI sees, at the level of granularity of individual files.
-
-✅ Works for Both Single-Shot & Automated Workflows: Whether working manually with LLMs or integrating AI-driven coding agents, pre-built context is faster and more reliable.
-
-✅ Fits AI-Assisted Development Best Practices: Small files (under 200 lines, ideally 100) encourage modular design. This tool solves the problem of gathering multiple related files efficiently.
-
-✅ Handles Distributed Code: Critical logic is often spread across shared/, providers/, schemas/, client/, and server/. This builder ensures you can package exactly what the AI needs for an end-to-end flow.
-
-Build and send the precise LLM context you need, with full control, and stop relying on your IDE to do the guesswork.
-
-
-# 🚀 Getting Started
-
-### 1️⃣ &nbsp;&nbsp;**Install the Library**
-You can install Contextr **directly from GitHub**:
+## Installation
 
 ```bash
-npm i contextr
+npm install contextr
 ```
 
-### 2️⃣ &nbsp;&nbsp;Define Your Context Configuration
+## Basic Usage
 
-Use a simple JSON-based config to select files for inclusion.
+```typescript
+import { FileContextBuilder } from 'contextr';
 
-```ts
-import contextr from "contextr";
-import type { FileCollectorConfig } from "contextr";
+// Create a context builder
+const builder = new FileContextBuilder({
+  includeDirs: ['src'],
+  exclude: ['**/*.test.ts', 'node_modules/**'],
+  includeFiles: ['package.json', 'README.md']
+});
 
-const { ConsoleRenderer, FileContextBuilder } = contextr;
+// Build context
+const result = await builder.build('console');
+console.log(result.output);
+```
 
-async function main() {
-  const config: FileCollectorConfig = {
-    name: "",
-    showContents: true,
-    showMeta: true,
-    includeDirs: [
-      {
-        path: "./prisma",
-        include: ["**/*"],
-        recursive: true,
-      },
-      {
-        path: "./src",
-        include: ["**/*.ts"],
-        recursive: true,
-      },
+## Advanced Usage
+
+### Using Regex Pattern Matching
+
+```typescript
+import { FileContextBuilder } from 'contextr';
+
+const builder = new FileContextBuilder({
+  includeDirs: ['src'],
+  exclude: [/node_modules/, /\.test\.ts$/],
+  useRegex: true
+});
+
+const result = await builder.build('console');
+```
+
+### Using Whitelist/Blacklist
+
+```typescript
+import { FileContextBuilder, WhitelistBlacklist } from 'contextr';
+
+// Create whitelist/blacklist configuration
+const fileFilter = WhitelistBlacklist.create({
+  whitelist: ['src/**/*.ts', 'config/*.json'],
+  blacklist: ['**/*.test.ts', '**/node_modules/**']
+});
+
+// Use with context builder
+const builder = new FileContextBuilder({
+  fileFilter
+});
+
+const result = await builder.build('console');
+```
+
+### Searching Within Files
+
+```typescript
+import { FileContextBuilder, FileContentSearch } from 'contextr';
+
+// Search for specific content
+const searchResults = await FileContentSearch.searchInFiles({
+  patterns: ['TODO', /fixme/i],
+  directories: ['src'],
+  useRegex: true,
+  caseSensitive: false
+});
+
+console.log(searchResults);
+
+// Build context with only files containing matches
+const builder = new FileContextBuilder({
+  includeFiles: searchResults.map(result => result.filePath)
+});
+
+const result = await builder.build('console');
+```
+
+### Using Tree View
+
+```typescript
+import { generateTree, formatTree } from 'contextr';
+
+// Generate tree
+const tree = await generateTree({
+  rootDir: process.cwd(),
+  exclude: ['node_modules/**', '.git/**'],
+  listOnlyPatterns: ['**/*.png', '**/*.jpg']
+});
+
+// Format and display tree
+console.log(formatTree(tree, { showSize: true, showListOnly: true }));
+```
+
+### Using List-only Mode
+
+```typescript
+import { FileContextBuilder } from 'contextr';
+
+const builder = new FileContextBuilder({
+  includeDirs: ['src'],
+  // Files to include in the tree but not their contents
+  listOnlyFiles: ['public/images/logo.png'],
+  listOnlyPatterns: ['**/*.png', '**/*.jpg']
+});
+
+const result = await builder.build('console');
+```
+
+### Using Security Features
+
+```typescript
+import { PluginEnabledFileContextBuilder } from 'contextr';
+
+const builder = new PluginEnabledFileContextBuilder({
+  includeDirs: ['src'],
+  plugins: {
+    securityScanners: [
+      'gitignore-security-scanner',
+      'sensitive-data-security-scanner'
     ],
-    includeFiles: ["./index.ts", "tsconfig.json", "./package.json"],
-  };
+    securityScannerConfig: {
+      'gitignore-security-scanner': {
+        treatGitIgnoreAsSecurityIssue: true
+      },
+      'sensitive-data-security-scanner': {
+        envFilesKeysOnly: true
+      }
+    }
+  }
+});
 
-  // Build the file context
-  const builder = new FileContextBuilder(config);
-  const context = await builder.build();
-
-  // Render output
-  const consoleRenderer = new ConsoleRenderer();
-  const notes = consoleRenderer.render(context);
-  console.log("\n✅ File Context:");
-  console.log(notes);
-}
-
-main();
-
+const result = await builder.build('console');
 ```
 
-## 🛠️ Extending the Output
+### Using Output Renderers
 
-Use Different Renderers
+```typescript
+import { PluginEnabledFileContextBuilder } from 'contextr';
 
-By default, two renderers are provided:
- - ConsoleRenderer → Outputs human-readable file trees and summaries.
- - JsonRenderer → Outputs structured JSON for LLM consumption.
+const builder = new PluginEnabledFileContextBuilder({
+  includeDirs: ['src'],
+  plugins: {
+    outputRenderers: [
+      'markdown-renderer',
+      'html-renderer'
+    ],
+    outputRendererConfig: {
+      'markdown-renderer': {
+        includeTableOfContents: true,
+        includeSecurityWarnings: true
+      }
+    }
+  }
+});
 
-You can create custom renderers by implementing the Renderer interface:
-
-```ts
-export interface Renderer<T = unknown> {
-  render(context: FileContext): T;
-}
+// Build context with Markdown format
+const result = await builder.build('markdown');
 ```
 
-## 🤝 Contributing
+### Using LLM Reviewers
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to submit issues, bug fixes, and new features.
+```typescript
+import { PluginEnabledFileContextBuilder } from 'contextr';
 
-## 🔏 Code of Conduct
+const builder = new PluginEnabledFileContextBuilder({
+  includeDirs: ['src'],
+  plugins: {
+    llmReviewers: [
+      'local-llm-reviewer'
+    ],
+    llmReviewerConfig: {
+      'local-llm-reviewer': {
+        generateFileSummaries: true,
+        generateProjectSummary: true
+      }
+    }
+  }
+});
 
-See [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) for Code of Conduct.
+const result = await builder.build('console');
+```
 
-## Publishing
+## CLI Usage
 
-<!-- ```npm version patch```
+contextr provides a powerful CLI for building context from the command line.
 
-```npm publish``` -->
-```npm run test```
-```npm run release```
+### Basic Commands
 
-## 📄 License
+```bash
+# Show help
+npx contextr --help
 
-Contextr is licensed under the [MIT License](./LICENSE.md).
+# Build context from a directory
+npx contextr build --dir src --output context.txt
+
+# Show file tree
+npx contextr tree show --dir src
+
+# Build context from tree
+npx contextr tree build --dir src --output context.txt
+
+# Search in files
+npx contextr search "TODO" --dir src
+
+# Launch UI studio mode
+npx contextr studio
+```
+
+### Advanced CLI Options
+
+```bash
+# Build context with security scanning
+npx contextr build --dir src --enable-plugins --security-scanners gitignore-security-scanner,sensitive-data-security-scanner
+
+# Build context with custom output format
+npx contextr build --dir src --format markdown --output context.md
+
+# Build context with list-only files
+npx contextr build --dir src --list-only "**/*.png,**/*.jpg"
+
+# Show tree with specific options
+npx contextr tree show --dir src --include-hidden --max-depth 3 --exclude "node_modules/**,dist/**"
+```
+
+## UI Studio Mode
+
+contextr includes a visual UI for building context and managing files. Launch it with:
+
+```bash
+npx contextr studio
+```
+
+![Studio UI](./images/studio-ui.svg)
+
+The UI provides:
+- File tree navigation
+- Visual configuration management
+- Directory configuration with drag-and-drop
+- Search functionality with result highlighting
+- Context preview in multiple formats
+
+## Plugin System
+
+contextr has a flexible plugin system that allows extending its functionality.
+
+### Plugin Types
+
+- **Security Scanners**: Detect and report security issues
+- **Output Renderers**: Format context in different ways
+- **LLM Reviewers**: Use LLMs to review and summarize code
+
+### Built-in Plugins
+
+#### Security Scanners
+- **GitIgnore Security Scanner**: Uses .gitignore patterns to identify potentially sensitive files
+- **Sensitive Data Security Scanner**: Detects API keys, passwords, and other sensitive information
+
+#### Output Renderers
+- **Console Renderer**: Formats context for terminal output
+- **JSON Renderer**: Outputs context as structured JSON
+- **Markdown Renderer**: Creates Markdown documentation with syntax highlighting
+- **HTML Renderer**: Generates interactive HTML with collapsible sections
+
+#### LLM Reviewers
+- **Local LLM Reviewer**: Uses locally installed LLMs (Ollama, LLama.cpp, GPT4All) for code review
+
+### Creating Custom Plugins
+
+Plugins are stored in a designated plugins directory and loaded automatically. See the [Plugin Development Guide](./docs/plugin-development.md) for details on creating custom plugins.
+
+## Architecture
+
+contextr is built with a modular architecture that separates concerns and allows for flexible extension.
+
+![Architecture](./images/architecture.svg)
+
+## Examples
+
+See the [examples](./examples) directory for complete usage examples:
+
+- [Plugin System Example](./examples/plugin-system-example.js)
+- [Tree and List-only Example](./examples/tree-and-list-only-example.js)
+- [Security Features Example](./examples/security-features-example.js)
+- [CommonJS Example](./examples/commonjs-example.js)
+- [ES Module Example](./examples/esm-example.js)
+- [CLI Example](./examples/cli-example.js)
+
+## Module Compatibility
+
+contextr supports both CommonJS and ES modules:
+
+```javascript
+// CommonJS
+const { FileContextBuilder } = require('contextr');
+
+// ES Modules
+import { FileContextBuilder } from 'contextr';
+```
+
+## VSCode Extension
+
+A VSCode extension concept is available in the [docs/vscode-extension-concept.md](./docs/vscode-extension-concept.md) file, which outlines how contextr could be integrated directly into VSCode.
+
+## License
+
+MIT

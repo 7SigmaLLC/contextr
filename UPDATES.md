@@ -140,12 +140,33 @@ npx contextr build --dir src --output context.txt
 npx contextr search "TODO" --dir src
 ```
 
+## Testing Improvements
+
+Comprehensive tests have been added for the new features:
+
+1. **Plugin System Tests**:
+   - `PluginManager.test.ts`: Tests plugin registration, loading, and management
+   - `PluginEnabledFileContextBuilder.test.ts`: Tests the plugin-enabled context builder
+
+2. **Security Scanner Tests**:
+   - `GitIgnoreSecurityScanner.test.ts`: Tests the GitIgnore security scanner
+   - `SensitiveDataSecurityScanner.test.ts`: Tests the sensitive data security scanner
+
+3. **Output Renderer Tests**:
+   - `MarkdownRenderer.test.ts`: Tests the Markdown renderer
+   - `HTMLRenderer.test.ts`: Tests the HTML renderer
+
+4. **Test Documentation**:
+   - Added comprehensive test documentation in `docs/testing.md`
+   - Includes examples and expected results for each test type
+   - Documents how to run tests and interpret results
+
 ## Next Steps
 
 1. Implement the VS Code extension based on the concept document
-2. Add more tests for the new features
-3. Improve documentation for the plugin system
-4. Consider adding more plugins for additional functionality
+2. Improve documentation for the plugin system
+3. Consider adding more plugins for additional functionality
+4. Add more examples for the new features
 
 ## Conclusion
 

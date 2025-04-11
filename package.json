@@ -16,10 +16,11 @@
     "contextr": "./dist/cjs/cli/bin.js"
   },
   "scripts": {
-    "build": "tsc --noEmit false --skipLibCheck true --noImplicitAny false",
+    "build": "npm run build:cjs && npm run build:esm || npm run build:simple",
     "build:cjs": "tsc -p tsconfig.build.json",
     "build:strict": "tsc -p tsconfig.json",
     "build:esm": "tsc -p tsconfig.esm.json",
+    "build:simple": "node build-simple.js",
     "test": "jest",
     "test:features": "node scripts/test-features.js",
     "prepublishOnly": "npm run build",
